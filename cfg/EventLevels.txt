@@ -1,0 +1,11 @@
+// populates the select list for Event Levels field
+
+<option value="B">Beginner</option>
+<option value="Y">Youth</option>
+<option value="W">Wheelchair accessable</option>
+
+
+
+
+
+

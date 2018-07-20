@@ -1,0 +1,9 @@
+// populates the select list for Trip Status
+
+<option value="">Status</option>
+<option value="Under Consideration">Under Consideration</option>
+<option value="Retain">Retain</option>
+<option value="New">New</option>
+<option value="Delete">Delete</option>
+
+

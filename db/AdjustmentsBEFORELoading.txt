@@ -1,0 +1,22 @@
+NOTE:
+The following should be done prior to loading either the events or leaders table from spreadsheets.
+
+1. delete the index column in col 1
+2. make sure that the there is only 1 tab in the spreadsheet
+3. make sure that the only tab is named 'events' or leaders' depending on ....
+4. adjust all column heading names to match the table names of the database
+5. load all Yes/No choices to one or the other - do not leave any blank cells.
+    (There are 3 Y/N columns in the events table, 1 in the leaders table)
+    events:  TransportNeeded, FeeRequired,  MultiEvent
+    leaders: Active
+6. Convert all boolean (0/1) to No/Yes values in TransportNeeded and MultiEvent
+7. Reformat StartTime and EndTime columns to be HH:MM:SS
+8. Add Dnbr column and load it with the event day number: 1=Friday, 2=Saturday, 3=Sunday, 4=Monday
+9. Add SiteCode column and initialize it with the codes.
+10. Modify Level column to put commas between letters (use Find/Replace)
+11. Modify TypeOfEvent column to single word - Birding vs Nature
+
+
+Before importing into database make sure to
+    1. Truncate the table
+    2. Set Auto Increment value to start at 1
