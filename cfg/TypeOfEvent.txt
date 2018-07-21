@@ -1,9 +1,0 @@
-// populates the select list for TypeOfEvent field
-
-<option value="">Type of Event</option>
-<option value="Birding">Birding Event</option>
-<option value="Nature">Nature Event</option>
-
-
-
-

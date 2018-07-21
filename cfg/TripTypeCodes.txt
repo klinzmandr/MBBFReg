@@ -1,6 +1,0 @@
-// converts Trip Type into its code
-// Trip Type MUST be present EXACTLY as shown in TripType.txt
-Field Trip:FT
-Presentation:Pres
-Presentation/Field Trip:Pres/FT
-Special Event:SE
