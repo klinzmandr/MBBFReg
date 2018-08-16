@@ -63,13 +63,17 @@ $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
 $f = $res->fetch_assoc();
 if ($rc == 0) {
-  echo "<h1>Profile $id does not exist.</h1><p>The profile name as entered does not yet exist.  Return to the previous page and click &quot;Create a registration profile&quot;.</p>
+  echo "<h1>Profile $id invalid or timed out.</h1><p>The profile name as entered can not be accessed.  Return to the previous page and re-enter it or create a new one.</p>
 <a href=\"index.php\" class=\"btn btn-primary btn-lg\"><h2>R E T U R N</h2></a>";
   exit;
   }
 
-// set up for multiple agendas if a FULL registration allowing
-// multiple agendas. Partial festival registrants
+// check if a pay lock exists for the profile.
+$lock = $f[PayLock];
+// if ($f[PayLock] == 'Lock') { $lock = 'Lock'; }
+  
+// set up for multiple attendees if a FULL registration 
+// allowing multiple agendas. Partial festival registrants
 // OR those asking for or have been approved for fees exemptions
 // must register as individuals limited to only 1 agenda.
 $multiOK = '';
@@ -86,21 +90,21 @@ $res = doSQLsubmitted($sql);
 $totalfees = 0; $totpay = 0; $activitycount = array(); $paycount = 0;
 $waitcount = 0; $agendacount = array();
 while ($r = $res->fetch_assoc()) {
-  if ($r[RecKey] == 'Reg') {
-    $agendacount[] = $r[AgendaName]; 
+  if ($r['RecKey'] == 'Reg') {
+    $agendacount[] = $r['AgendaName']; 
     continue;
     }
-  if ($r[RecKey] == 'Pay') {
+  if ($r['RecKey'] == 'Pay') {
     $paycount += 1;
-    $totpay += $r[Payment];
+    $totpay += $r['Payment'];
     continue;
     }
-  if ($r[RecKey] == 'Evt') {
-    $activitycount[] = $r[EvtRowID];
-    $totalfees += $r[FEE];
+  if ($r['RecKey'] == 'Evt') {
+    $activitycount[] = $r['EvtRowID'];
+    $totalfees += $r['FEE'];
     continue;
     }
-  if ($r[RecKey] == 'EvtWL') {
+  if ($r['RecKey'] == 'EvtWL') {
     $waitcount += 1;
     }
   }
@@ -126,6 +130,19 @@ $evtcnt = count($activitycount);
   p, th, td, select, .btn { font-size: 1.5em; }
   tx { font-size: 1.75em; }
   input[type=checkbox] { transform: scale(1.5); }
+
+i.ex1 {
+    /* border: 1px solid red; */ 
+    padding: 5px;
+    background-color: green;
+    color: white;
+  }
+i.ex2 {
+    /* border: 1px solid red; */ 
+    /* padding: 5px; */
+    /* background-color: green; */
+    color: blue;
+  }
 </style> 
 </head>
 <body>
@@ -136,35 +153,47 @@ $(function() {
   if (am.length) $("#LObtn").hide();    // set admin mode flag
   var ma = "<?=$multiOK?>";
   if (ma.length == 0) $("#ada").hide(); // hide add/delete agenda button
+
+  var lk = "<?=$lock?>";
+  if (lk == 'Lock') {
+      $("#msgdialogtitle").html("<h3 style='color: red;'>Profile Update Prohibited.</h3>"); 
+      $("#msgdialogcontent").html("<p>This profile can only be changed by the Festival Registrar.</p><p>Please contact the registrar by emailing registrar@morrobaybf.net or phone at 805-555-1212 between 8 and 5 weekdays.</p>");
+      $('#msgdialog').modal('toggle', { keyboard: true });
+  }
 });
 
 </script>
 <!-- <img src="http://morrobaybirdfestival.net/wp-content/uploads/2016/08/LOGO3.png" width="400" height="100" alt="bird festival logo"> -->
 <h1>Profile for <?=$id?></h1>
-<table class=table><tr><td>
+<?php if (($lock == 'Lock') OR ($admmode == ON)) {
+  echo '<ul><a href="index.php" id=LObtn class="btn btn-primary btn-lg">R E T U R N</a></ul>';
+  exit; } 
+?>
+<table class=table><tr><td width="30%">
 <a href="register.php" class="btn btn-primary btn-lg">Schedule Events</a></td>
-
+<td align=center>
+<a title="Add/Delete Attendees" href="profagendas.php" id=ada class="btn btn-success"><i class="fa fa-users" aria-hidden="true"></i></a>
+</td>
 <td align="right">
-<i id=helpbtn class="fa fa-bars fa-3x">&nbsp;&nbsp;</i> 
+<!-- <i id=helpbtn class="fa fa-bars fa-3x">&nbsp;&nbsp;</i> --> 
+<i id=helpbtn title="Help information" class="ex2 fa fa-info-circle fa-3x">&nbsp;&nbsp;</i> 
 </td></tr></table>
-
-<ul><a href="profagendas.php" id=ada class="btn btn-success">Add/Delete Attendees</a></ul>
-
-<div id=help>
 <ul>
 <a href="index.php" id=LObtn class="btn btn-primary btn-lg">FINISHED</a>&nbsp;&nbsp;
 <a href="profsummary.php" class="btn btn-primary btn-lg">Event Summary</a>&nbsp;&nbsp;
 <a href="profnew.php?action=update" class="btn btn-primary btn-lg">Upd Profile</a>
-
+</ul>
 <br>
+<div id=help>
+<ul>
 <h3>Profile Information:</h3>
 <p>The profile record is used to hold information about the registrant as well as other information such as meal selections, etc.</p>
-<p>A profile may have one or more attendee agendas defined for a FULL Festival registration.  By default one agenda (identified as &quot;SELF&quot;) is created.  Any number of attendee agendas may be added.</p>
-<p>A <a href="profreset.php" style="background-color: red; color: white;">Profile Reset</a> may be done to delete all added attendee agendas and all associated scheduled events.  This basically starts the registration process over.  Only the basic information (name, address, contact information, etc.) of the profile is retained.</p>
-<p>Additional attendee agendas are created by clicking the &quot;Add/Del Attendee&quot; button then and providing a unique identifier.  All attendee agendas and their associated events are grouped under the profile along with any/all fees applicable.</p>
-<p>An single attendee agenda may be deleted as long as there are NO event scheduled.  ALL events for ALL days must be deleted before an attendee agenda can be deleted.  A list of all scheduled events for all agendas and all days may be viewed by clicking the &quot;Event Summary&quot; button</p>
-<p>Event selection is done by clicking the &quot;Schedule Events&quot; button.  ALL selected events for a day are listed.  Successful registration is noted by a status code of &quot;OK&quot; in the status column.</p>
-<p>An event is &quot;Wait Listed&quot; (indicated by a status code of  &quot;WL&quot; in the status column) when the maximum capacity of the requested event has been reached.  A future request to register will be fulfilled if there is capacity available and there is still interest in the event.  Un-check the event and re-select it.  If capacity is available, the status will change to &quot;OK&quot;.  Otherwise, it will revert to &quot;WL&quot;.</p>
+<p>A profile may have one or more attendee agendas defined for a FULL Festival registration.  By default one attendee agenda (identified as &quot;SELF&quot;) is created.  Any number of attendee agendas may be added.</p>
+<p>A <a href="profreset.php" style="background-color: red; color: white;">Profile Reset</a> may be done to delete all added attendee agendas and all associated scheduled events.  This basically starts the registration process over and allows the choices for a fee exemption for festival registration fees and the festival registration type to be re-entered.  Only the basic information (name, address, contact information, etc.) of the profile is retained.</p>
+<p>Additional attendee agendas are added by clicking the add/delete attendee icon <i class="ex1 fa fa-users" aria-hidden="true"> </i>.  Individual attendees are added by providing a unique name.  One or multiple attendee agendas can be deleted as well.  All scheduled events for each deleted attendee will also be deleted.</p>
+<p>Event selection is done by clicking the &quot;Schedule Events&quot; button.  ALL selected events for a day are listed.  Successful registration is noted by a status code of &quot;OK&quot; in the status column.  Drop down selection lists provide the ability to choose the specific day and/or attendee for event selection.</p>
+<p>An event is &quot;Wait Listed&quot; (indicated by a status code of  &quot;WL&quot; in the status column) when the maximum capacity of the requested event has been reached.  A second event with overlapping times may be selected as a secondary choice.  If space beomes available the Festival Registrar MAY delete the secondary choice and register the attendee for the wait listed event (applicable fees apply.)</p>
+<p>Event selection may be done for all registered attendees by selecting the &quot;ALL&quot; option in the attendee selection drop down.  All selected events for all attendees is displayed after clicking the &quot;Add/Del Evt&quot; button.  Checking/unchecking any listed event will add or delete it for all attendee(s).  It is recommended that grouped choices be made first before any individual event choices.</p>
 <p>Clicking the &quot;Pro Forma Invoice and Payments&quot; button will provide an invoice detailing all the fees that have been accrued based on the number of agendas defined, the selections in the profile (lunches, shirts, etc.), events fees (if any).  Any previous payments are also noted providing a balance due amount.</p>
 
 </ul>

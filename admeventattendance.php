@@ -21,10 +21,12 @@ WHERE `regeventlog`.`EvtRowID` = '$evtrowid'
   AND `regeventlog`.`ProfName` = `regprofile`.`ProfileID`
 ORDER BY `EvtRowID` ASC;
 ";
+// echo "sql: $sql<br>";
+
 $res = doSQLsubmitted($sql);
 while ($r = $res->fetch_assoc()) {
   // echo '<pre>regevt '; print_r($r); echo '</pre>';
-  $aa[$r[ProfName]][$r[AgendaName]] = $r[RecKey];
+  $aa[$r[ProfName]][$r['AgendaName']] = $r[RecKey];
   $aa[$r[ProfName]][fname] = $r[ProfFirstName];
   $aa[$r[ProfName]][lname] = $r[ProfLastName];
   }

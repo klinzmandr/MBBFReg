@@ -13,14 +13,15 @@ $feesched = readlistreturnarray('Fees');
 // echo "<pre>feesched "; print_r($feesched); echo '</pre>';
 
 // get total fees from regeventlog
-$sql = "SELECT DISTINCT `RecKey`, SUM(`FEE`) as 'regfees', COUNT(`RecKey`) as 'regcount' FROM `regeventlog` WHERE `ProfName` = '$profname' GROUP BY `RecKey`;";
+$sql = "SELECT DISTINCT `RecKey`, SUM(`FEE`) as 'regfees', SUM(`Payment`) as 'regpay', COUNT(`RecKey`) as 'regcount' FROM `regeventlog` WHERE `ProfName` = '$profname' GROUP BY `RecKey`;";
 // echo "sql: $sql<br>";
 $profres = doSQLsubmitted($sql);
 while ($r = $profres->fetch_assoc()) {
-  $regtots[$r[RecKey]] = $r[regfees];
+  $regtots[$r[RecKey]] += $r[regfees];
   $regcount[$r[RecKey]] = $r[regcount]; 
+  $regtots[$r[RecKey]] += $r[regpay];
   }
-// echo '<pre>tots '; print_r($tots); echo '</pre>';
+// echo '<pre>regtots '; print_r($regtots); echo '</pre>';
 $evtfees = isset($regtots[Evt]) ? number_format($regtots[Reg]) : '0.00';
 $evtaofees = isset($regtots[EvtAO]) ? number_format($regtots[Reg]) : '0.00';
 $totproffees = isset($regtots[Reg]) ? number_format($regtots[Reg]) : '0.00';
@@ -76,7 +77,7 @@ $totprofshirts += $r[shirtmXL] * $feesched[Shirts];
 $totprofshirts += $r[shirtmXXL] * $feesched[Shirts];
 $totshirts = $r[shirtwS]+$r[shirtwM]+$r[shirtwL]+$r[shirtwXL]+$r[shirtmS]+$r[shirtmM]+$r[shirtmL]+$r[shirtmXL]+$r[shirtmXXL];
 
-$s = $totshirts - $totreg; 
+$s = $totshirts; 
 if ($s >= 0) $totprofshirts = $s * $feesched[Shirts]; 
 if ($totshirts == 0) {
   $shrlist = 'NO SHIRTS ORDERED';
@@ -105,8 +106,8 @@ while ($r = $res->fetch_assoc()) {
     continue;
     }
   if (($r[RecKey] == 'Evt') OR ($r[RecKey] == 'EvtAO')) {
-    if ($r[FEE] == 0) $evtlist .= "Event $r[Trip] $r[Event] (Agenda: $r[AgendaName])<br>";
-    else $evtlist .= "Event $r[Trip] $r[Event] (Agenda: $r[AgendaName]) @ $r[FEE]<br>";
+    if ($r[FEE] == 0) $evtlist .= "Event $r[Trip] $r[Event] (Attendee: $r[AgendaName])<br>";
+    else $evtlist .= "Event $r[Trip] $r[Event] (Attendee: $r[AgendaName]) @ $r[FEE]<br>";
     $activitycount[] = $r[EvtRowID];
     $totevtfees += $r[FEE];
     continue;
@@ -116,7 +117,7 @@ $totevtfees = number_format($totevtfees,2);
 
 $paymentrow = "<tr><td>less total payment(s):</td><td align=right>$-$totpay</td><tr>";
 if ($totpay == 0) $paymentrow = "";
-$grandtotal = number_format(($totevtfees + $totproflunch + $totproffees),2);
+$grandtotal = number_format(($totevtfees + $totproflunch + $totproffees + $totprofshirts),2);
 
 $disc = 0;
 $totproffees = number_format($totproffees, 2);
@@ -159,7 +160,7 @@ $balance = number_format(($grandtotal - $totpay - $discapplied),2);
 <tr><td colspan=2><ul><?=$reglist?></ul></td></tr>
 <tr><td>Lunches</td><td align=right>$<?=$totproflunch?></td></tr>
 <tr><td colspan=2><ul><?=$lunlist?></ul></td></tr>
-<tr><td>Shirts (Free to registrants)</td><td align=right>&nbsp;</td></tr>
+<tr><td>Shirts</td><td align=right>$<?=$totprofshirts?></td></tr>
 <tr><td colspan=2><ul><?=$shrlist?></ul></td></tr>
 <tr><td>Scheduled Events</td><td align=right>$<?=$totevtfees?></td></tr>
 <tr><td colspan=2><ul><?=$evtlist?></ul></td></tr>

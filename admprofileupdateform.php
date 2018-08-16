@@ -6,6 +6,8 @@ $id = isset($_REQUEST['profname']) ? $_REQUEST['profname'] : $_SESSION['profname
 $_SESSION['profname'] = $id;  // set profile name for session
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 $f = $_REQUEST['f'];
+$paylock = isset($_REQUEST["PayLock"]) ? 'Lock' : '';
+$f[PayLock] = $paylock;
 
 // include 'Incls/vardump.inc.php';
 include 'Incls/datautils.inc.php';
@@ -24,6 +26,8 @@ $f = $res->fetch_assoc();
 // echo '<pre> update '; print_r($f); echo '</pre>';
 $f['Exempt'] = isset($f['Exempt']) ? $f['Exempt'] : 'NO';
 $exempt = $f['Exempt'];
+
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -33,6 +37,7 @@ $exempt = $f['Exempt'];
 <link href="css/bootstrap.min.css " rel="stylesheet" media="all">
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
+<script src="js/jsutils.js"></script>
 <style>
   input[type=checkbox] { transform: scale(1.5); }
 </style> 
@@ -50,10 +55,12 @@ $(function() {
   $("#xMsg").fadeOut(5000);
   $("#EX").val('<?=$exempt?>');
   $("#regdd").val("<?=$f[regType]?>");
+  var cb = "<?=$f[PayLock]?>";
+  if (cb == 'Lock') $("#CB").prop('checked', true);
   });
 </script>
 <form action="admprofileupdateform.php" method="post">
-<table class=table>
+<table class=table border=1>
 <input type=hidden name=f[ProfileID] type=text value="<?=$id?>";
 <tr><td>First name: <input name=f[ProfFirstName] type=text value="<?=$f[ProfFirstName]?>">
 Last name: <input name=f[ProfLastName] type=text value="<?=$f[ProfLastName]?>">
@@ -62,7 +69,8 @@ Last name: <input name=f[ProfLastName] type=text value="<?=$f[ProfLastName]?>">
 <tr><td>City <input name=f[ProfCity] type=text value="<?=$f[ProfCity]?>">
 ST <input name=f[ProfState] type=text value="<?=$f[ProfState]?>">
 ZIP <input name=f[ProfZip] type=number value="<?=$f[ProfZip]?>" style="width: 75px;" min=0 max=99999></td></tr>
-<tr><td>Contact phone number: <input name=f[ProfContactNumber] type=tel value="<?=$f[ProfContactNumber]?>"></td></tr>
+<tr><td>Contact phone number: <input name=f[ProfContactNumber] type=tel value="<?=$f[ProfContactNumber]?>">&nbsp;&nbsp;&nbsp;&nbsp;
+Profile locked: <b><input id=CB title="Profile lock when payment(s) entered and blocks further changes by registrant unless unlocked by Registrar." type=checkbox name=PayLock value='Lock'></b></td></tr>
 <input type=hidden name=action value="update">
 <tr><td><input type="submit" name="submit" value="Update Profile" class="btn btn-primary"></td></tr>
 </table>

@@ -29,10 +29,10 @@ $pay = $_REQUEST['pay'];
 <body>
 <h1>Payments</h1>
 <p>Use this page to choose how you would like to pay for the Festival registration and event fees.</p>
+<p>You may pay online using either VISA or MasterCard on the secure PayPal server, OR send us a check by mail to reach us within 7 days.</p>
 <table class=table>
 <tr><td width="50%">
 <h3>Send a Check</h3>
-<p>You may pay online using either VISA or MasterCard on the secure PayPal server, OR send us a check by mail to reach us within 7 days.</p>
 <p>If you pay by check, make it payable to <b>Morro Bay Bird Winter Festival</b>, or <b>MBWBF</b>, and mail to:</p>
 <ul>
 Registrar, MBWBF<br>

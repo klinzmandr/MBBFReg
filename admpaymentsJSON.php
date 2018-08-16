@@ -1,4 +1,5 @@
 <?php
+// provide payment history in response
 include 'Incls/datautils.inc.php';
 // for tesing use test profile
 // $id = isset($_REQUEST['profile']) ? $_REQUEST['profile'] : 'a@a.com';

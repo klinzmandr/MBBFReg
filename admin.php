@@ -53,8 +53,8 @@ if ($action == 'auth') {
 
 // output menu if session var is loaded
 if (isset($_SESSION['REGSessionUser'])) {
-  $start = date('l, F j, Y', strtotime(geteventstart()));
-    //echo "start: $start<br>";
+  $start = date('l, F j, Y \a\t g:i A', strtotime(geteventstart()));
+  // echo "event start: $start<br>";
 
 include 'Incls/mainmenu.inc.php';
 
@@ -75,7 +75,7 @@ exit;
 // display login page to get userid and pw
 if ($action == '') {
   echo '
-<div clas="container">
+<div class="container">
 <h3>Registration Administration</h3>
 <h4>Please provide login information:</h4>
 <form action="admin.php" method="post"  id="login">

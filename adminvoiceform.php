@@ -124,7 +124,7 @@ $totpay = number_format($totpay, 2);
 
 $paymentrow = "<tr><td>less total for $paycount payment(s):</td><td align=right>-$$totpay</td><tr>";
 if ($totpay == 0) $paymentrow = "";
-$grandtotal = number_format(($totevtfees + $totproflunch + $totproffees),2);
+$grandtotal = number_format(($totevtfees + $totproflunch + $totproffees + $totprofshirts),2);
 
 $disc = 0;
 if ($exemption == 'APPROVED') {
@@ -170,7 +170,7 @@ include 'Incls/mainmenu.inc.php';
 <tr><td colspan=2><ul><?=$reglist?></ul></td></tr>
 <tr><td>Lunches</td><td align=right>$<?=$totproflunch?></td></tr>
 <tr><td colspan=2><ul><?=$lunlist?></ul></td></tr>
-<tr><td>Shirts (Free to registrants)</td><td align=right>&nbsp;</td></tr>
+<tr><td>Shirts</td><td align=right>$<?=$totprofshirts?></td></tr>
 <tr><td colspan=2><ul><?=$shrlist?></ul></td></tr>
 <tr><td>Scheduled Events</td><td align=right>$<?=$totevtfees?></td></tr>
 <tr><td colspan=2><ul><?=$evtlist?></ul></td></tr>

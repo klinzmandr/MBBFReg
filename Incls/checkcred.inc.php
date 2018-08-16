@@ -48,32 +48,39 @@ function geteventstart() {
   $pwds = readlistarray('Users');
 //echo '<pre> pwds '; print_r($pwds); echo '</pre>';
 //echo '<pre> combo '; print_r($combo); echo '</pre>';
+// format: eventstart:YYYY-MM-DD HH:MM
   foreach ($pwds as $l) {
-    list($key, $startdate) = explode(':', $l);
+    list($part1, $starttime) = explode(" ", $l);    // isolate start time
+    list($key, $startdate) = explode(':', $part1);  // isolate key and start date
     if ($key == 'eventstart') break;
   }
-  return($startdate);
+  return($startdate.' '.$starttime);
   }
   
 function getregend() {
   $pwds = readlistarray('Users');
 //echo '<pre> pwds '; print_r($pwds); echo '</pre>';
 //echo '<pre> combo '; print_r($combo); echo '</pre>';
+// format: regend:YYYY-MM-DD HH:MM
+
   foreach ($pwds as $l) {
-    list($key, $startdate) = explode(':', $l);
+    list($part1, $starttime) = explode(" ",$l);
+    list($key, $startdate) = explode(':', $part1);
     if ($key == 'regend') break;
-  }
-  return($startdate);
+    }
+  return($startdate.' '.$starttime);
   }
   
 function getregstart() {
   $pwds = readlistarray('Users');
 //echo '<pre> pwds '; print_r($pwds); echo '</pre>';
 //echo '<pre> combo '; print_r($combo); echo '</pre>';
+// format: regend:YYYY-MM-DD HH:MM
   foreach ($pwds as $l) {
-    list($key, $startdate) = explode(':', $l);
+    list($part1, $starttime) = explode(" ",$l);
+    list($key, $startdate) = explode(':', $part1);
     if ($key == 'regstart') break;
   }
-  return($startdate);
+  return($startdate.' '.$starttime);
   }
 ?>

@@ -2,6 +2,7 @@
 session_start(); 
 error_reporting(E_ERROR | E_WARNING | E_PARSE); 
 
+$lock = isset($_REQUEST['PayLock']) ? $_REQUEST['PayLock'] : '';
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 $f = $_REQUEST['f'];
 
@@ -12,6 +13,8 @@ if ($action == 'pay') {
   sqlinsert("regeventlog", $f);
   $updmsg = '<h3 id="xMsg" style="color: red;">Update complete</h3>';
   // echo 'payment processing<br>';
+  $updarray[PayLock] = $lock; // update profile with lock info
+  sqlupdate('regprofile', $updarray, "`ProfileID` = '$f[ProfName]'");
   }
 
 $res = doSQLsubmitted("SELECT `ProfName`, SUM(`FEE`) AS 'totfee', SUM(`Payment`) AS 'totpay' FROM `regeventlog` WHERE 1=1 GROUP BY `ProfName`;");
@@ -36,7 +39,7 @@ while ($r = $res->fetch_assoc()) {
   $baldue = number_format(($f - $p), 2);
   if (!isset($paytot[$id])) $p = '0.00';
   if (!isset($feetot[$id])) $p = '0.00';
-  $tr .= "<tr style='cursor: pointer;'><td>$id</td><td align=right>$$f</td><td align=right>$$p</td><td align=right>$$baldue</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td><td>$r[ProfContactNumber]</td></tr>";
+  $tr .= "<tr class=ROW style='cursor: pointer;'><td>$id</td><td align=right>$$f</td><td align=right>$$p</td><td align=right>$$baldue</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td><td>$r[ProfContactNumber]</td></tr>";
   }
 
 ?>
@@ -66,7 +69,7 @@ $(function() {
   $("#filter").focus();
   $("#xMsg").fadeOut(5000);
 
-$("tr").click(function() {
+$("tr.ROW").click(function() {
   $("#payform").toggle();
   p = $(this).find('td').first().text();
   // console.log($(this).find('td').first().text());
@@ -96,14 +99,15 @@ $("#HIST").click(function() {
   });
 });
 </script>
-
+<style> input[type=checkbox] { zoom: 2; } </style>
 <div id=payform>
-
 <h3>New payment for profile: <span id=PI></span></h3>
 <p>NOTE: enter a negative amount for a refund.</p>
 <form action="admpayments.php" method="post">
-Amount: <input id=AMT type=number name=f[Payment] value=''><br>
-Notes: <input type=text name=f[ProfNotes] style="width: 350px;" value=''><br>
+<table border=1><tr>
+<td>Amount: <input id=AMT type=number name=f[Payment] value=''></td>
+<td title="By default, lock the profile from further changes by attendee.  Uncheck to allow further changes to profile or event schedule(s)."><input type=checkbox checked name=PayLock value=Lock><b>Lock profile?</b></td>
+<tr><td>Notes: <input title="Enter reference info like a check number, credit card number (last 4 digits) or other info" type=text name=f[ProfNotes] style="width: 500px;" value=''></td></tr></table>
 <input type="hidden" name="f[ProfName]" id="PN" value=''>
 <input type="hidden" name="f[RecKey]" value='Pay'>
 <input type="hidden" name="action" value='pay'>

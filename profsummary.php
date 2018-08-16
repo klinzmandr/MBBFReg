@@ -29,7 +29,7 @@ while ($r = $res->fetch_assoc()) {
 
 
 foreach ($agendas as $k => $v) {
-  $tbod .= "<h3>Agenda: $k</h3>";
+  $tbod .= "<h3>Attendee: $k</h3>";
   $tbod .= "<ul><table class=table>";
   $tbod .= '<thead><tr><th>EvtRID</th><th>ST</th><th>EvtNbr</th><th>Event Title</th><th>Day</th><th>Start</th><th>End</th><th>Fee</th><th></th></tr></thead><tbody>';
   foreach ($v as $kk => $vv) {

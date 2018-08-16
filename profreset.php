@@ -32,7 +32,8 @@ else {
   $rdr[mealFrM] = $rdr[mealFrV] = $rdr[mealSaM] = $rdr[mealSaV] = 0; 
   $rdr[mealSuM] = $rdr[mealSuV] = 0;
   $rdr[shirtwS] = $rdr[shirtwM] = $rdr[shirtwL] = $rdr[shirtwXL] = 0;    
-  $rdr[shirtmS] = $rdr[shirtmM] = $rdr[shirtmL] = $rdr[shirtmXL] = $rdr[shirtmXXL] = 0; 
+  $rdr[shirtmS] = $rdr[shirtmM] = $rdr[shirtmL] = 0;
+  $rdr[shirtmXL] = $rdr[shirtmXXL] = 0; 
   
   // the profile record can now be written back
   // echo "rdsql: $rdsql<br>";

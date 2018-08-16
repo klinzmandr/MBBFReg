@@ -17,7 +17,7 @@ $rc = $res->num_rows;
 $tr = '';
 while ($r = $res->fetch_assoc()) {
   // echo '<pre>profile '; print_r($r); echo '</pre>';
-  $tr .= "<tr style='cursor: pointer;'><td>$r[ProfileID]</td><td>$r[Exempt]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td></tr>";
+  $tr .= "<tr style='cursor: pointer;'><td>$r[ProfileID]</td><td>$r[PayLock]</td><td>$r[Exempt]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td></tr>";
   }
 
 ?>
@@ -61,7 +61,7 @@ $("tr").click(function() {
 </script>
 <input id=filter autofocus placeholder='Filter'>&nbsp;&nbsp;<button id=filterbtn2>Reset</button>
 <table class=table>
-<tr id=head><th>ProfileID</th><th title="Indicates if an exemption of fees was requested. Marked &apos;appoved&apos; only by Festival Registrar using this utility.">Exempt</th><th>FIrstName</th><th>LastName</th><th>Address</th><th>City</th><th>ST</th><th>Zip</th><th>PhoneNbr</th></tr>
+<tr id=head><th>ProfileID</th><th title="Locked status indicates payment(s) have been made.  Use this update to change this status if necessary.">Locked?</th><th title="Indicates if an exemption of fees was requested. Marked &apos;appoved&apos; only by Festival Registrar using this utility.">Exempt</th><th>FIrstName</th><th>LastName</th><th>Address</th><th>City</th><th>ST</th><th>Zip</th><th>PhoneNbr</th></tr>
 <?=$tr?>
 </table>
 === END LIST ===<br>

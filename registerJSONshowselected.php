@@ -13,7 +13,7 @@ WHERE `regeventlog`.`EvtRowID` = `events`.`RowID`
   AND `regeventlog`.`ProfName` = '$profile'
   AND `regeventlog`.`AgendaName` = '$agenda'
   AND `events`.`Day` = '$day'
-ORDER BY `RowNbr` ASC";
+ORDER BY `Trip` ASC";
 
 $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
