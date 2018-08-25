@@ -1,0 +1,1 @@
+<p>This is the first test of the email template for [firstname] [lastname]&nbsp;</p><p>With the contact number of [contactnbr].&nbsp;&nbsp;</p><p>Balances: $[totfees] with total payments of $[totpayments] for a balance of $[profbal]</p><p>Hopefully.</p>

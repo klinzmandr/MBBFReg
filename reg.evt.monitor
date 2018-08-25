@@ -1,0 +1,40 @@
+#!/usr/bin/php
+<?php
+error_reporting(E_ERROR | E_WARNING | E_PARSE);
+//
+// THIS IS A PRODUCTION SCRIPT!!!
+//
+// event monitor will check the registration log to deteremine if there
+//   is any profiles that have gone without being update
+// Any event added will reset the time out period for the profile.
+// database variables will have to be redefined when moved to a different server
+define("ProdDBName", 'mbbfdb');define("DBUserName", 'PWCDbUser');define("DBPassword", 'hROdKzvYOtHG');define("HostPort", '3306');
+$mysqli = new mysqli('localhost', DBUserName, DBPassword, ProdDBName);
+if ($mysqli->connect_errno) {
+	$errno = $mysqli->connect_errno;
+  echo "Failed to connect to MySQL: (" . $errno . ") " . $mysqli->connect_error . "\n";
+  return;
+  }
+
+$count = 0;
+$time = "Started on ".date("M d, Y \a\\t H:i", strtotime("now"))."<br>";
+while (file_exists('reg.evt.monitor.LOCK')) {
+  // $count++;
+  // file_put_contents('reg.evt.monitor.LOCK', "count: $count\n", FILE_APPEND);
+  addlogentry($mysqli, "admevtmonitor update");
+  sleep(10*60);            // sleep timer in seconds
+  }
+
+unlink('reg.event.monitor.LOCK');  // delete lock file
+
+exit;
+
+// ========= db function =========
+function addlogentry($mysqli, $msg) { // write log msg to database
+	$txt = addslashes($msg);
+	$sql = "INSERT INTO `log` (`User`, `SecLevel`, `Text`) VALUES ('EvtMon', 'EvtMon', '$txt');";
+	$res = $mysqli->query($sql);
+	return;
+  }
+
+?>
