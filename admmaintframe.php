@@ -6,7 +6,7 @@ $profname = isset($_REQUEST['profname']) ? $_REQUEST['profname'] : $_SESSION['pr
 $_SESSION['profname'] = $profname;
 
 // used in register.php to hide logout button
-$_SESSION['admMode'] = true;
+$_SESSION['admMode'] = 'ON';
 
 // include 'Incls/vardump.inc.php';
 ?>
@@ -28,7 +28,7 @@ $_SESSION['admMode'] = true;
 <body>
 <a href="admin.php" class="btn btn-success btn-lg">RETURN TO ADMIN</a>
 <div class="container">
-<iframe src="register.php" style="height:550px;width:800px;"></iframe>
+<iframe src="proflogin.php" style="height:550px;width:800px;"></iframe>
 </div> <!-- container -->
 </body>
 </html>
