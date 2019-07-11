@@ -80,7 +80,7 @@ WHERE ( `DateTime` BETWEEN '$sd' AND '$ed' )
   AND ( `User` LIKE '$search' 
    OR `Text` LIKE '$search' 
    OR `Page` LIKE '$search' )
-ORDER BY `DateTime` DESC LIMIT 0,1000;
+ORDER BY `DateTime` ASC LIMIT 0,1000;
 ";
 	// echo "sql: $sql<br />";
 	$res = doSQLsubmitted($sql);

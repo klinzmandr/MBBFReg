@@ -2,7 +2,6 @@
 session_start(); 
 error_reporting(E_ERROR | E_WARNING | E_PARSE); 
 
-
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
 $profname = isset($_REQUEST['profname']) ? $_REQUEST['profname'] : '';
 
@@ -11,7 +10,11 @@ include 'Incls/datautils.inc.php';
 
 if ($action == 'wipe') {
   // do actual sql deletes in this block
-  $xMsg = "<h4 id=xMsg>Wipe action completed for profile $profname.</h4>";  
+  $res1 = doSQLsubmitted("DELETE FROM `regprofile` WHERE `ProfileID` = '$profname';");
+  $rc1 = $res1->num_rows;
+  $res2 = doSQLsubmitted("DELETE FROM `regeventlog` WHERE `ProfName` = '$profname';");
+  $rc2 = $res2->num_rows;
+  $xMsg = "<h3 id=xMsg style='color: red;'>Wipe action completed for profile $profname.</h4>";  
   }
 
 $Msg = '';
@@ -29,7 +32,7 @@ if ($action == 'apply') {
   $res = doSQLsubmitted("SELECT * FROM `regeventlog` WHERE `RecKey` ='Pay' AND `ProfName` = '$profname'");
   $rcpay = $res->num_rows;
   $Msg = "<h3 id=Msg style='color: red;'>Delete action for profile $profname will be that $rcpro profile, $rcag agenda(s), $rcevt event(s) and $rcpay payment(s) will be deleted.<br><br>
-  <a href='admprofilewipeout.php?action=wipe' class='btn btn-danger'>CONTINUE</a><br><br></h3>";
+  <a href='admprofilewipeout.php?action=wipe&profname=$profname' class='btn btn-danger'>CONTINUE</a><br><br></h3>";
   
   }
 
@@ -57,7 +60,6 @@ while ($r = $res->fetch_assoc()) {
 <script src="js/jquery.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
 <script src="js/jsutils.js"></script>
-<script src="js/chksession.js"></script>
 
 </head>
 <body>

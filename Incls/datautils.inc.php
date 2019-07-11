@@ -34,8 +34,8 @@ if (substr_compare($sql,"DELETE",0,6,TRUE) == 0) {
 //        return 'affected_rows' instead of select results 
 if (!$res) {
     showError($res);
+    addlogentry("ERROR: " . $sql);
 		}
-addlogentry($sql);
 return($res);
 }
 

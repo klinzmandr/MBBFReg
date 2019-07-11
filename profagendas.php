@@ -36,7 +36,7 @@ $sql = "
 SELECT DISTINCT `AgendaName` FROM `regeventlog` WHERE `ProfName` = '$profname' AND `RecKey` = 'Reg';";
 //echo "<br>sql: $sql<br>";
 $res = doSQLsubmitted($sql);
-$rcagenda = ($res->num_rows) ;   // $rcagenda = number of agendas
+$rcagenda = $res->num_rows;   // $rcagenda = number of agendas
 // echo "rcagenda: $rcagenda<br>";
 $astr = array();
 
@@ -58,7 +58,14 @@ if ($action == 'addagenda') {
     }
   }
 
-// create attendee listing
+// create attendees list
+// first get profile's registration name
+$profsql = "SELECT `ProfFirstName`, `ProfLastName` FROM `regprofile` WHERE `ProfileID` = '$profname'"; 
+$profres = doSQLsubmitted($profsql);
+$prof = $profres->fetch_assoc();
+$self = strtoupper($prof[ProfFirstName] .' '. $prof[ProfLastName]);
+// echo "self: $self<br>";
+
 while ($r = $res->fetch_assoc()) {
   // echo '<pre>log '.$rowid.' '; print_r($r); echo '</pre>';
   $astr[] = $r[AgendaName];
@@ -68,15 +75,15 @@ if ($rcagenda < $maxAttendees) {
   $astr[] = $newagenda;   
   }
 // echo '<pre>astr '; print_r($astr); echo '</pre>';
-$agendas = '"' . implode('", "', $astr) . '"'; // for jquery validation
+$agendas = '"' . implode('", "', $astr) . '"'; // for javascript validation
 // echo "agendas: $agendas<br>";
 
 // create checkbox list
 $alist = '';
 foreach ($astr as $v) {
   if ($v == '') continue;
-  if ($v == 'SELF') {
-    $alist .= "&nbsp;&nbsp;&nbsp;&nbsp;$v<br>";
+  if ($v == $self) {
+    $alist .= "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;$v<br>";
     continue;
     }
   $alist .= "<input class=ag type=checkbox value='$v' name=ag[]>&nbsp;$v<br>
@@ -117,7 +124,7 @@ $(function() {
   input[type=checkbox] { transform: scale(1.5); }
 </style> 
 <h1>Add/Delete Attendees</h1>
-<p>Use this page to add a new attendee to your profile or delete one or more attendees from it.  There are currently <?=$rcagenda?> attendees(s) added in addition to &apos;SELF&apos;.  The current list is:</p>
+<p>Use this page to add a new attendee to your profile or delete one or more attendees from it.  There are currently <?=$rcagenda?> attendees(s) registered.  The current list is:</p>
 <script>
 function del() {
   var cnt = $(".ag:checked").length;
@@ -164,7 +171,7 @@ function chk() {
 </ul>
 <br><br>
 
-<a href="proflogin.php" class="btn btn-primary btn-lg">D O N E</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="register.php" class="btn btn-success">Sched Events</a>
+<a href="proflogin.php" class="btn btn-primary btn-lg">RETURN</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<a href="register.php" class="btn btn-success">Sched Events</a>
 
 </body>
 </html>

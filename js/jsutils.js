@@ -5,7 +5,6 @@ $(document).ready(function() {
   $('.updb').prop('disabled', true);
   $("#Xmsg").fadeOut(2000);
   $("#help").hide();
-  
   $('.updb').prop('disabled', true);
 
 // to detect and change on form
@@ -13,7 +12,7 @@ var $form = $('form');
 // var formValues = $('form').getFormValues();  // save form in case of reset
 var origForm = $form.serialize();   // to save field values on initial load
  
-$('form :input').on('change input', function() {
+$('form :input').on('keyup input', function() {
   if ($form.serialize() !== origForm) {         // check for any changes
     chgFlag++;
     $('.updb').prop('disabled', false);    

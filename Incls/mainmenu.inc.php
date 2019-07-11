@@ -74,15 +74,31 @@ body { padding-top: 50px; }
 <!-- Profile Maintenance -->
   <li class="dropdown">
     <a id="dLabel" role="button" data-toggle="dropdown" class="btn btn-default" 
-    href="#">Profile and Agendas<span class="caret"></span></a>
+    href="#">Profiles and Attendees<span class="caret"></span></a>
 		<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
-		  <li><a href="admprofsummary.php" title="Update a selected profile."> Profile Summary</a></li>
+		  <li><a href="admprofsummary.php" title="List all events for sekected profile."> Profile Event Summary</a></li>
 		  <li><a href="admprofupdate.php" title="Update a selected profile.">Update Profile</a></li>
 		  <li><a href="admmaint.php" title="Update a assoicated agendas for a profile using the attendee interface.">Schedule Events</a></li>
 		  <li style='cursor: pointer;'><a id=AP title="Create a new attendee profile to be used by the maintenance interface to add agendas and events.">Add new profile</a></li>
 		  <li><a href="admprofilewipeout.php" title="Delete an existing profile and ALL associated agendas.">Wipe out an existing profile</a></li>
+		  
     </ul>  <!-- dropdown-menu multi-level -->
   </li>  <!-- dropdown  -->
+
+<!-- utilities -->
+<li class="dropdown">
+    <a id="uLabel" role="button" data-toggle="dropdown" class="btn btn-default" 
+    href="#">Utilities <span class="caret"></span></a>
+		<ul class="dropdown-menu multi-level" role="menu" aria-labelledby="dropdownMenu">
+		<li><a href="emailsend.php" title="Compose an email message or a predefined template message.">Send Email Message</a></li>
+		<li><a href="emaileditreplys.php" title="Maintain the predefined message templaes used by the email sending utility.">Edit Email Message Templates</a></li>
+		<li><a href="admevtmon.php" title="Start/stop background check on profiles to delete any scheduled events from those that are inactive.">Event Monitor</a></li>
+		  <li><a href="admevtlogviewer.php" title="Examine the event monitor log file to review all actions taken by the event monitor utility.">Event Monitor Log</a></li><li><a href="admusersanddates.php">Maintain Users And Dates</a></li>
+		<li><a href="admfeeroster.php" title="Establish and maintian fees for all non-event items including the festival registration fee.">Fee Roster</a></li>
+		<li><a href="adm_smtp_tester.php" title="Test connections to the mail server for sending mail.">Mail Connecivity Test</a></li>
+		<li><a href="admlogviewer.php" title="View registration system activity log.">General Activity Log</a></li>
+      </ul>
+  </li>  <!-- dropdown -->
 
 <!-- reports -->
   <li class="dropdown">
@@ -93,7 +109,11 @@ body { padding-top: 50px; }
       <li><a href="admcapacity.php" title="Listing of all festival events with each event&apos;s attendance capacity and totals for registered attendees, wait list count and space available.">Capacity Drilldown Report</a></li>
       <li><a href="admshirts.php" title="Listing of all shirt sizes that have been ordered by those that have registered.  Probaby used for vendor ordering.">Shirts Report</a></li> 
       <li><a href="admlunches.php" title="Liting of all lunches that have been ordered by registered attendees by type within day.">Lunches Report</a></li> 
-      <li><a href="admfeeroster.php" title="Establish and maintian fees for all non-event fees including the festival registration fee.">Fee Roster</a></li>		  
+      <li><a href="UC.php" title="Listing of all profiles with outstanding balances." >Payments Due Report</a></li>
+      <li><a href="UC.php" title="Print mailing labels" >Print Mailing Label</a></li>
+      <li><a href="UC.php" title="Print name tags for speakers, leaders and volunteers." >Print Name Tags</a></li>
+      <li><a href="UC.php" title="Print all event information including list of attendees registered." >Event Info and Attendance List</a></li>
+      		  
     </ul>  <!-- dropdown-menu multi-level -->
   </li>  <!-- dropdown  -->
 
@@ -127,20 +147,37 @@ $("#AP").click(function(event) {
   pn = pn.toLowerCase();
   var re = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (re.test(String(pn))) {
-    $("#IN").val(pn);
-    $("#FF").submit();
+    $("#IN").val(pn);   // profile name
     }
   else {
     event.preventDefault();
     alert("Invalid profile name: "+pn);
+    return;
     }
+  // var an = prompt("Enter the first and last name of the new attendee");
+  // var error = '';
+  // var illegalChars = /^[\w\-\s]+$/gi;
+  // if (an.length == 0) {
+  //   error += "Missing attendee name.\n";
+  //   } 
+  // if (!(illegalChars.test(an))) {
+  //   error += "The name may only contain letters and numbers.\n";
+  //   }
+  // if (error.length) {
+  //   event.preventDefault();
+  //   alert("Invalid attendee:\n\n"+error);
+  //   return;
+  //   }    
+  // an = an.toUpperCase();  
+  // $("#AN").val(an);   // agenda name
   
+  $("#FF").submit();  // submit form
   });
 });
 </script>  
+
 <form id=FF action=admaddprofile.php>
 <input id=IN type=hidden name=newprofname value=''>
-<input type=hidden name=new value='new'>
 </form>
 
 <script>

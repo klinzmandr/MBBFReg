@@ -14,7 +14,8 @@ $rc = $res->num_rows;
 $tr = '';
 while ($r = $res->fetch_assoc()) {
   // echo '<pre>profile '; print_r($r); echo '</pre>';
-  $tr .= "<tr><td>$r[RowID]</td><td>$r[ProfileID]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td></tr>";
+    $emlink = "<a href='emailsend.php?rowid=$r[RowID]'>$r[ProfileID]</a>";
+  $tr .= "<tr><td>$r[RowID]</td><td>$emlink</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td></tr>";
   }
 
 ?>

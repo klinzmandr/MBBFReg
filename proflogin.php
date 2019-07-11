@@ -11,31 +11,24 @@ $admmode = isset($_SESSION['admMode']) ? 'ON' : '';
 $f = isset($_REQUEST['f']) ? $_REQUEST['f'] : array();  // row fields
 // echo '<pre> field '; print_r($f); echo '</pre>';
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
+$agn = isset($_REQUEST['agendaname']) ? $_REQUEST['agendaname'] : 'SELF';
 
 // echo "1. id: $id, action: $action<br>";
 
 // include 'Incls/vardump.inc.php';
 include 'Incls/datautils.inc.php';
 include 'Incls/listutils.inc.php';
+include 'Incls/checkcred.inc.php';
 
 // get fee roster
 $feesched = readlistreturnarray('Fees');
 // echo "<pre>feesched "; print_r($feesched); echo '</pre>';
 
-
+// echo "1. start of proflogin.php<br>";
 // only triggered by call from profnew.php
 if ($action == 'new') {
-  echo '<pre>new '; print_r($f); echo '</pre>';
-  $status = sqlinsert('regprofile', $f);
-  // echo "2. action = new in profnew, insert status: $status<br>";
-  }
-
-// only triggered by call from profnew.php
-if ($action == 'update') {
-  $f[ProfileID] = "$id";
-  // echo "<pre>update f "; print_r($f); echo '</pre>';  
+  // echo '<pre>NEW '; print_r($f); echo '</pre>';
   $status = sqlupdate('regprofile', $f, "`ProfileID` = '$id'");
-  // echo "3. action = update in profnew, status: $status<br>";
   
   // update profeventlog SELF agenda with latest fees
   switch ($f[regType]) {
@@ -51,9 +44,21 @@ if ($action == 'update') {
       $upda['FEE'] = $feesched[RegLast];
       break;
     }  
-  
-  // echo '<pre>upd '; print_r($upda); echo '</pre>';
-  $astatus = sqlupdate('regeventlog', $upda, "`ProfName` = '$id' AND `AgendaName` = 'SELF'");
+  // create initial agenda (assume full festival registration)
+  $upda['RecKey'] = 'Reg';
+  $upda['ProfName'] = $id;
+  $upda['AgendaName'] = strtoupper($agn);
+  sqlinsert('regeventlog', $upda);
+
+  // echo "2. action = new in proflogin, insert into evt log, status: $status<br>";
+  }
+
+// only triggered by call from profnew.php
+if ($action == 'update') {
+  $f[ProfileID] = "$id";
+  // echo "<pre>update f "; print_r($f); echo '</pre>';  
+  $status = sqlupdate('regprofile', $f, "`ProfileID` = '$id'");
+  // echo "3. action = update in proflogin, status: $status<br>";
   }
 
 // read profile
@@ -68,6 +73,20 @@ if ($rc == 0) {
   exit;
   }
 
+// get festival start date and time, setup exemption flag
+$exemptionstart = date("F j, Y \a\\t H:i", strtotime(getregstart()."+ 2 weeks"));
+$exemptstart = strtotime(getregstart()."+ 2 weeks");
+$exemptnow = strtotime("now");
+// echo "exemptnow: $exemptnow, exemptstart: $exemptstart<br>";
+// echo "profileexempt: $f[Exempt]<br>";
+$exemptflag = 'NO';
+if ($f[Exempt] != 'NO') { 
+  if ($exemptnow >= $exemptstart) {
+    $exemptflag = 'YES';          // OK for vols and slbm to schedule events
+    }
+  }
+// echo "exemptflag: $exemptflag<br>";
+
 // check if a pay lock exists for the profile.
 $lock = $f[PayLock];
 // if ($f[PayLock] == 'Lock') { $lock = 'Lock'; }
@@ -76,12 +95,12 @@ $lock = $f[PayLock];
 // allowing multiple agendas. Partial festival registrants
 // OR those asking for or have been approved for fees exemptions
 // must register as individuals limited to only 1 agenda.
-$multiOK = '';
+unset($_SESSION['multiOK']);
 // multiple profiles OK for full registration only
-if ($f[regType] == 'full') $multiOK = 'ON'; 
-// default: NO unless asked for (YES) or approved (APPROVED) 
-if ($f[Exempt] != 'NO') $multiOK = '';  
-// echo "regType: $f[regType], multiOK: $multiOK<br>";
+$_SESSION['multiOK'] = 'ON';
+if ($f[Exempt] == 'YES') $_SESSION['multiOK'] = 'OFF';   
+if ($f[Exempt] == 'APPROVED') $_SESSION['multiOK'] = 'OFF';   
+if ($f[regType] != 'full') $_SESSION['multiOK'] = 'OFF';   
 
 // get all rows from event log
 $sql = "SELECT * FROM `regeventlog` WHERE `ProfName` = '$id';";
@@ -91,7 +110,8 @@ $totalfees = 0; $totpay = 0; $activitycount = array(); $paycount = 0;
 $waitcount = 0; $agendacount = array();
 while ($r = $res->fetch_assoc()) {
   if ($r['RecKey'] == 'Reg') {
-    $agendacount[] = $r['AgendaName']; 
+    $agendacount[] = $r['AgendaName'];
+    $totalfees += $r['FEE'];
     continue;
     }
   if ($r['RecKey'] == 'Pay') {
@@ -114,6 +134,7 @@ $evtcnt = count($activitycount);
 //$regdues = number_format(($agcnt * 85), 2);
 //$bal = 0;
 //$bal = number_format(($regdues + $totalfees - $totpay),2);
+// include 'Incls/vardump.inc.php';
 ?>
 <!DOCTYPE html>
 <html>
@@ -128,16 +149,16 @@ $evtcnt = count($activitycount);
 
 <style>
   p, th, td, select, .btn { font-size: 1.5em; }
-  tx { font-size: 1.75em; }
+  tx { font-size: 1.25em; }
   input[type=checkbox] { transform: scale(1.5); }
 
-i.ex1 {
+.ex1 {
     /* border: 1px solid red; */ 
     padding: 5px;
     background-color: green;
     color: white;
   }
-i.ex2 {
+.ex2 {
     /* border: 1px solid red; */ 
     /* padding: 5px; */
     /* background-color: green; */
@@ -151,70 +172,103 @@ $(function() {
   // alert("on load");
   var am = "<?=$admmode?>";
   if (am.length) $("#LObtn").hide();    // set admin mode flag
-  var ma = "<?=$multiOK?>";
-  if (ma.length == 0) $("#ada").hide(); // hide add/delete agenda button
+  if ('<?=$_SESSION['multiOK']?>' == 'OFF') $("#ada").hide(); // hide add/delete agenda button
 
   var lk = "<?=$lock?>";
   if (lk == 'Lock') {
-      $("#msgdialogtitle").html("<h3 style='color: red;'>Profile Update Prohibited.</h3>"); 
-      $("#msgdialogcontent").html("<p>This profile can only be changed by the Festival Registrar.</p><p>Please contact the registrar by emailing registrar@morrobaybf.net or phone at 805-555-1212 between 8 and 5 weekdays.</p>");
-      $('#msgdialog').modal('toggle', { keyboard: true });
+    $("#msgdialogtitle").html("<h3 style='color: red;'>Profile Update Prohibited.</h3>"); 
+    $("#msgdialogcontent").html("<p>This profile can only be changed by the Festival Registrar.</p><p>Please contact the registrar by emailing registrar@morrobaybirdfestival.org or phone at 805-555-1212 between 8 and 5 weekdays.</p>");
+    $('#msgdialog').modal('toggle', { keyboard: true });
+    }
+  
+  if ('<?=$exemptflag?>' != 'NO') {
+    $("#msgdialogtitle").html("<h2 style='color: red;'>Event Scheduling Blocked</h2>"); 
+    $("#msgdialogcontent").html("<p><b>Volunteers, Leaders, Speakers and Board Members can not schedule events prior to <?=$exemptionstart?></b></p><p>Policy prohibits events being scheduled by those exempted from festival event fees until 2 weeks after the announced public registration date.</p>");
+    $('#msgdialog').modal('toggle', { keyboard: true });
   }
+  
 });
 
 </script>
 <!-- <img src="http://morrobaybirdfestival.net/wp-content/uploads/2016/08/LOGO3.png" width="400" height="100" alt="bird festival logo"> -->
 <h1>Profile for <?=$id?></h1>
-<?php if (($lock == 'Lock') OR ($admmode == ON)) {
-  echo '<ul><a href="index.php" id=LObtn class="btn btn-primary btn-lg">R E T U R N</a></ul>';
+<?php 
+// include 'Incls/vardump.inc.php';
+// if ($admmode == 'ON') { exit; }
+
+// block event scheduleing by exempted attendees
+if ($exemptflag != 'NO') {
+  echo "<h2 style='color: red;'>Event Scheduling Blocked</h2><ul><p><b>Volunteers, Leaders, Speakers and Board Members can not schedule events prior to $exemptionstart</b></p><br><a href='index.php' class='btn btn-primary btn-lg'>E X I T</a></ul></body></html>";
+  exit;
+  }
+  
+// if ((($lock == 'Lock') OR ($admmode != 'ON'))) {
+if (($lock == 'Lock')) {
+  echo '<a href="profsummary.php" class="btn btn-success">Click for a complete listing of scheduled events.</a><br><br>
+  <a href="profregister.php" class="btn btn-success">Click for a copy of the completed invoice.</a><br><br>
+  <ul><a href="index.php" class="btn btn-primary btn-lg">E X I T</a></ul>
+  </body></html>';
   exit; } 
 ?>
+<script>
+$(function() {
+  $("#infobtn").click(function() {
+    // alert ("info button clicked");
+      $.post("profloginJSONhelp.php",
+    {
+    },
+    function(data, status) {
+      // alert(data);      
+      $("#msgdialogtitle").html("<h3 style='color: red;'>Profile Information</h3>"); 
+      $("#msgdialogcontent").html(data);
+      $('#msgdialog').modal('toggle', { keyboard: true });
+      }
+    );  // end $.post logic 
+  });
+});
+</script>
 <table class=table><tr><td width="30%">
 <a href="register.php" class="btn btn-primary btn-lg">Schedule Events</a></td>
 <td align=center>
 <a title="Add/Delete Attendees" href="profagendas.php" id=ada class="btn btn-success"><i class="fa fa-users" aria-hidden="true"></i></a>
-</td>
+<!-- <a title="Add or delete attendees to the profile" href="profagendas.php" id=ada class="ex1 btn btn-default btn-xs">Add Attendee(s)</a> -->
 <td align="right">
 <!-- <i id=helpbtn class="fa fa-bars fa-3x">&nbsp;&nbsp;</i> --> 
-<i id=helpbtn title="Help information" class="ex2 fa fa-info-circle fa-3x">&nbsp;&nbsp;</i> 
+<i id=infobtn title="Help information" class="ex2 fa fa-info-circle fa-3x">&nbsp;&nbsp;</i>
 </td></tr></table>
-<ul>
-<a href="index.php" id=LObtn class="btn btn-primary btn-lg">FINISHED</a>&nbsp;&nbsp;
-<a href="profsummary.php" class="btn btn-primary btn-lg">Event Summary</a>&nbsp;&nbsp;
-<a href="profnew.php?action=update" class="btn btn-primary btn-lg">Upd Profile</a>
-</ul>
-<br>
-<div id=help>
-<ul>
-<h3>Profile Information:</h3>
-<p>The profile record is used to hold information about the registrant as well as other information such as meal selections, etc.</p>
-<p>A profile may have one or more attendee agendas defined for a FULL Festival registration.  By default one attendee agenda (identified as &quot;SELF&quot;) is created.  Any number of attendee agendas may be added.</p>
-<p>A <a href="profreset.php" style="background-color: red; color: white;">Profile Reset</a> may be done to delete all added attendee agendas and all associated scheduled events.  This basically starts the registration process over and allows the choices for a fee exemption for festival registration fees and the festival registration type to be re-entered.  Only the basic information (name, address, contact information, etc.) of the profile is retained.</p>
-<p>Additional attendee agendas are added by clicking the add/delete attendee icon <i class="ex1 fa fa-users" aria-hidden="true"> </i>.  Individual attendees are added by providing a unique name.  One or multiple attendee agendas can be deleted as well.  All scheduled events for each deleted attendee will also be deleted.</p>
-<p>Event selection is done by clicking the &quot;Schedule Events&quot; button.  ALL selected events for a day are listed.  Successful registration is noted by a status code of &quot;OK&quot; in the status column.  Drop down selection lists provide the ability to choose the specific day and/or attendee for event selection.</p>
-<p>An event is &quot;Wait Listed&quot; (indicated by a status code of  &quot;WL&quot; in the status column) when the maximum capacity of the requested event has been reached.  A second event with overlapping times may be selected as a secondary choice.  If space beomes available the Festival Registrar MAY delete the secondary choice and register the attendee for the wait listed event (applicable fees apply.)</p>
-<p>Event selection may be done for all registered attendees by selecting the &quot;ALL&quot; option in the attendee selection drop down.  All selected events for all attendees is displayed after clicking the &quot;Add/Del Evt&quot; button.  Checking/unchecking any listed event will add or delete it for all attendee(s).  It is recommended that grouped choices be made first before any individual event choices.</p>
-<p>Clicking the &quot;Pro Forma Invoice and Payments&quot; button will provide an invoice detailing all the fees that have been accrued based on the number of agendas defined, the selections in the profile (lunches, shirts, etc.), events fees (if any).  Any previous payments are also noted providing a balance due amount.</p>
 
+<ul>
+<a title="Exit the scheduling system and return to login page." href="index.php" id=LObtn class="btn btn-primary btn-lg">E X I T</a>&nbsp;&nbsp;
+<a title="List of any/all scheduled events for each attendee registered on the profile." href="profsummary.php" class="btn btn-primary btn-lg">Events Scheduled</a>&nbsp;&nbsp;
+<a title="Update all profile information EXCEPT registration type, event exemption and the profile name/email address." href="profnew.php?action=update" class="btn btn-primary btn-lg">Update Profile</a>
 </ul>
-</div>
+<?php
+if ($admmode == 'ON') exit;
+?>
+<br>
 
 <ul>
 <table border="0" class="table" width="80%">
 <thead></thead>
 <tbody>
 <tr><td><tx>Agendas currently defined:</tx></td>
-<td><tx><?=$agcnt?></tx></tx></tr>
-<tr><td><tx>Total events scheduled (all agendas):</tx></td>
-<td><tx><?=$evtcnt?></tx></tx></tr>
-<tr><td><tx>Total events Wait Listed (all agendas):</tx></td>
-<td><tx><?=$waitcount?></tx></td></tr>
-<tr><td><tx>Total Event Fees (Scheduled events only):</tx></td>
-<td><tx>$<?=$totalfees?></tx></tx></tr>
+<td align=right><tx><?=$agcnt?></tx></tx></tr>
+<tr><td><tx>Total events scheduled (all attendees):</tx></td>
+<td align=right><tx><?=$evtcnt?></tx></tx></tr>
+<tr><td><tx>Total events Wait Listed (all attendees):</tx></td>
+<td align=right><tx><?=$waitcount?></tx></td></tr>
+<tr><td><tx>Total Accumulated Festival Fees:</tx></td>
+<td align=right><tx>$<?=$totalfees?></tx></tx></tr>
 </tbody>
 </table>
 </ul>
-<a class="btn btn-primary btn-lg" href="profregister.php">Pro Forma Invoice and Payment</a>
+<table border=0 class=table>
+<tr><td><a class="btn btn-primary" href="profregister.php">Invoice</a></td>
+<td align=right>
+<a title="Confirmation of festval registration and all scheduled events." class="btn btn-success" href="profpayment.php?pay=<?=$totalfees?>"><b>Confirmation<br>and Payment</b></a>
+</td></tr>
+</table>
 <br><br>
 </body>
 </html>
+

@@ -12,9 +12,9 @@ include 'Incls/datautils.inc.php';
 if ($action == 'pay') {
   sqlinsert("regeventlog", $f);
   $updmsg = '<h3 id="xMsg" style="color: red;">Update complete</h3>';
-  // echo 'payment processing<br>';
   $updarray[PayLock] = $lock; // update profile with lock info
   sqlupdate('regprofile', $updarray, "`ProfileID` = '$f[ProfName]'");
+  // echo "payment processing lock: '$lock'<br>";
   }
 
 $res = doSQLsubmitted("SELECT `ProfName`, SUM(`FEE`) AS 'totfee', SUM(`Payment`) AS 'totpay' FROM `regeventlog` WHERE 1=1 GROUP BY `ProfName`;");
@@ -39,7 +39,8 @@ while ($r = $res->fetch_assoc()) {
   $baldue = number_format(($f - $p), 2);
   if (!isset($paytot[$id])) $p = '0.00';
   if (!isset($feetot[$id])) $p = '0.00';
-  $tr .= "<tr class=ROW style='cursor: pointer;'><td>$id</td><td align=right>$$f</td><td align=right>$$p</td><td align=right>$$baldue</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td><td>$r[ProfContactNumber]</td></tr>";
+  $emlink = "<a href='emailsend.php?rowid=$r[RowID]'><i class='fa fa-envelope fa-2x' aria-hidden='true' title='Create and send email to registrant'></i></a>";
+  $tr .= "<tr class='ROW' style='cursor: pointer;'><td>$id</td><td>$emlink</td><td align=right>$$f</td><td align=right>$$p</td><td align=right>$$baldue</td><td>$r[PayLock]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td><td>$r[ProfContactNumber]</td></tr>";
   }
 
 ?>
@@ -52,6 +53,7 @@ while ($r = $res->fetch_assoc()) {
 <title>Payments</title>
 <!-- Bootstrap -->
 <link href="css/bootstrap.min.css " rel="stylesheet" media="all">
+<link href="css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body>
 <script src="js/jquery.min.js"></script>
@@ -71,15 +73,25 @@ $(function() {
 
 $("tr.ROW").click(function() {
   $("#payform").toggle();
-  p = $(this).find('td').first().text();
-  // console.log($(this).find('td').first().text());
+  p = $(this).find('td').first().text();  // profile name
+  // console.log(p);
   $("#PN").val(p);
   $("#PI").text(p);
   $("#AMT").focus();
+  var l = $(this).find('td:nth-child(5)').text();
+  // console.log(l);
+  if (l == 'Lock') $("#PCB").prop("checked", true);
+});
+
+$("#AMT").blur(function() {
+  $("#PCB").prop("checked", false);
+  var al = $("#AMT").val();
+  if (al.length) $("#PCB").prop("checked", true);
   });
 
 $("#CAN").click( function(event) {
   event.preventDefault();
+  $("#PCB").prop("checked", false);
   $("#payform").hide();
   $("#filter").focus();
   });
@@ -99,27 +111,28 @@ $("#HIST").click(function() {
   });
 });
 </script>
-<style> input[type=checkbox] { zoom: 2; } </style>
+<style> input[type=checkbox] { zoom: 1.5; } </style>
 <div id=payform>
 <h3>New payment for profile: <span id=PI></span></h3>
-<p>NOTE: enter a negative amount for a refund.</p>
-<form action="admpayments.php" method="post">
-<table border=1><tr>
-<td>Amount: <input id=AMT type=number name=f[Payment] value=''></td>
-<td title="By default, lock the profile from further changes by attendee.  Uncheck to allow further changes to profile or event schedule(s)."><input type=checkbox checked name=PayLock value=Lock><b>Lock profile?</b></td>
-<tr><td>Notes: <input title="Enter reference info like a check number, credit card number (last 4 digits) or other info" type=text name=f[ProfNotes] style="width: 500px;" value=''></td></tr></table>
+<b>NOTE: enter a negative amount for a refund.</b><br>
+<h4><form action="admpayments.php" method="post">
+Amount: <input id=AMT type=number name=f[Payment] value='0'></td>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<span title="This locks the profile from further changes by attendee.  Uncheck to allow further changes to profile or event schedule(s)."><input id=PCB type=checkbox name=PayLock value=Lock><b>Lock profile?</b></span><br>
+&nbsp;&nbsp;Memo: <input title="Enter reference info like a check number, credit card number (last 4 digits) or other info" type=text name=f[ProfNotes] style="width: 500px;" value=''>
+<br><br>
 <input type="hidden" name="f[ProfName]" id="PN" value=''>
 <input type="hidden" name="f[RecKey]" value='Pay'>
 <input type="hidden" name="action" value='pay'>
 <input type=submit name=submit value=Submit>&nbsp;&nbsp;<button id=CAN>CANCEL</button>
-</form><br>
+</form></h4><br>
 <button id=HIST class="btn btn-success">Show Payment History</button>
 <br><br>
 </div>  <!-- payform -->
 <?=$updmsg?>
 <input id=filter autofocus placeholder='Filter'>&nbsp;&nbsp;<button id=filterbtn2>Reset</button>
 <table class=table>
-<tr id=head><th>ProfileID</th><th>TotFees</th><th>TotPay</th><th>BalDue</th><th>FIrstName</th><th>LastName</th><th>Address</th><th>City</th><th>ST</th><th>Zip</th><th>PhoneNbr</th></tr>
+<tr id=head><th>ProfileID</th><th title='Create and send an email to registrant'>Email</th><th>TotFees</th><th>TotPay</th><th>BalDue</th><th>Status</th><th>FIrstName</th><th>LastName</th><th>Address</th><th>City</th><th>ST</th><th>Zip</th><th>PhoneNbr</th></tr>
 <?=$tr?>
 </table>
 

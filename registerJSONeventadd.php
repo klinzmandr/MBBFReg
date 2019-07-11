@@ -21,10 +21,15 @@ $admmode = isset($_SESSION['admMode']) ? 'ON' : '';
 
 // create list of one or more agenda names
 $size = count($an);
+if ($size == 0) {
+  echo "Attendee list error.  Please advise author";
+  exit;
+  }
+
 $insertsize = 0; $new = ''; $slist = '';
 foreach ($an as $v) {
   if ($v == '') { $size--; continue; }
-  if (preg_match("/all|attendee/i", $v)) { $size--; continue; }
+  if (preg_match("/allxz/i", $v)) { $size--; continue; }
   $new .= "('Evt', '$pn', '$v', $rid, $fee), " ;
   $slist .= "'$v', ";
   $insertsize++;

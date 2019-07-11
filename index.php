@@ -30,7 +30,7 @@ include 'Incls/checkcred.inc.php';
 </head>
 <body>
 <div class="container">
-<img src="http://morrobaybirdfestival.net/wp-content/uploads/2016/08/LOGO3.png" alt="bird festival logo" >
+<img src="http://morrobaybirdfestival.org/wp-content/uploads/2016/08/LOGO3.png" alt="bird festival logo">
 <script>
 $(function() {
   $("#CRbtn").attr("disabled", "disabled");
@@ -109,10 +109,11 @@ Profile ID: <input id=EM2 name=profname type=email value=''>
 <b>NOTES:</b>
 <ol>
   <li>An introductory video is available at <a href="https://youtu.be/r3or80VVyzo" target=_blank>Event Registration System</a> to allow review of this system before starting.</li>
-  <li>A Festival profile is used to register on or more attendees and schedule attendance to all festival events.</li>
+  <li>A Festival profile is used to register one or more attendees and to schedule attendance for festival events.</li>
 	<li>Your email address is used to uniquely identify your Festival schedule.</li>
-	<li>Each Full Festival registration profile may have multiple attendee agendas associated with it.  Single day registrations are limited to a single attendee./li>
+	<li>Each Full Festival registration profile may have a maximum of 4 attendees associated with it.  Single day registrations are limited to a single attendee.</li>
 	<li>All profiles and associated attendee agendas are deleted at after the Festival has concluded.</li>
+	<li>All scheduled events will be deleted from a registration profile 30 minutes after completion unless all registration fees have been paid.</li>
 </ol>
 <div class="well">
 <h4>GPL License</h4>

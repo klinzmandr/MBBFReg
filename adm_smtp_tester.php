@@ -46,6 +46,7 @@ exit;
 
 echo '<h3>Results:</h3><div class=well><pre>';
 echo "check starts ....\n";
+include '../.MBBFDBParamInfo';
 require './PHPMailer/PHPMailerAutoload.php';
 
 //Create a new SMTP instance
@@ -95,9 +96,9 @@ try {
     echo "Trying to connect with userid and password\n";
     $err .= 'Trying to connect with userid and password<br>';
     if (array_key_exists('AUTH', $e)) {
-      if ($smtp->authenticate('mbbf', 'Ci1xkPyOadOr')) {
+      if ($smtp->authenticate(EmailUserID, EmailPassWord)) {
         echo "Connected ok!\n";
-        $err .= 'Connected ok!<br>';
+        $err .= '<b>Connection successful!</b><br>';
         } 
      else {
             throw new Exception('Authentication failed: ' . $smtp->getError()['error']);

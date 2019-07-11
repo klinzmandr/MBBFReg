@@ -7,33 +7,56 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 // event monitor will check the registration log to deteremine if there
 //   is any profiles that have gone without being update
 // Any event added will reset the time out period for the profile.
-// database variables will have to be redefined when moved to a different server
-define("ProdDBName", 'mbbfdb');define("DBUserName", 'PWCDbUser');define("DBPassword", 'hROdKzvYOtHG');define("HostPort", '3306');
-$mysqli = new mysqli('localhost', DBUserName, DBPassword, ProdDBName);
+
+// create absolute path to db info
+$re = '/(.*\/).*$/mi';
+$str = getcwd();
+$subst = '\1.MBBFDBParamInfo';
+$inclpath = preg_replace($re, $subst, $str);
+
+echo "include path for db info: $inclpath\n";
+
+$sleepseconds = 10*60;    // time between runs
+
+include $inclpath;
+$mysqli = new mysqli(ProdHost, DBUserName, DBPassword, ProdDBName, HostPort);
+
 if ($mysqli->connect_errno) {
 	$errno = $mysqli->connect_errno;
   echo "Failed to connect to MySQL: (" . $errno . ") " . $mysqli->connect_error . "\n";
   return;
   }
-
-$count = 0;
-$time = "Started on ".date("M d, Y \a\\t H:i", strtotime("now"))."<br>";
+addlogentry($mysqli, "Event Montor starting");
+echo "Monitor starting at ".date("Y-m-d H:i", strtotime("now"))."\n";
 while (file_exists('reg.evt.monitor.LOCK')) {
-  // $count++;
-  // file_put_contents('reg.evt.monitor.LOCK', "count: $count\n", FILE_APPEND);
-  addlogentry($mysqli, "admevtmonitor update");
-  sleep(10*60);            // sleep timer in seconds
+  // addlogentry($mysqli, "Start periodic check .....<br>");
+  $res1 = $mysqli->query("SELECT `regeventlog`.`ProfName`, MAX(`regeventlog`.`DateTime`) AS 'MaxDT', COUNT(`regeventlog`.`AgendaName`) as 'AgenCnt' FROM `regeventlog`, `regprofile` WHERE `regeventlog`.`ProfName` = `regprofile`.`ProfileID` AND ( `regprofile`.`PayLock` IS NULL AND `regeventlog`.`RecKey` LIKE 'Evt%' ) GROUP BY `regeventlog`.`ProfName`");
+  $qrc = $mysqli->affected_rows;
+  $log = "Scanning $qrc profiles<br>";
+  $rightnow = strtotime("now");
+  while ($r = $res1->fetch_assoc()) {
+    $dt = $r['MaxDT'];
+    $time = strtotime("$dt + 30 minutes");
+    $pn = $r['ProfName'];
+    $log .= "checking: $pn<br>";
+    if ($time < $rightnow) {
+      $res2 = $mysqli->query("DELETE FROM `regeventlog` WHERE `ProfName` = '$pn' AND `RecKey` LIKE 'Evt%';");
+      $rc = $mysqli->affected_rows;
+      $log .= "&nbsp;&nbsp;&nbsp;&nbsp;Deleted $rc event(s)<br>";
+      } 
+    }
+  addlogentry($mysqli, $log);
+  sleep($sleepseconds);                  // sleep timer in seconds
   }
-
-unlink('reg.event.monitor.LOCK');  // delete lock file
-
+addlogentry($mysqli, "Event Monitor exiting");
+echo "Monitor stopping at ".date("Y-m-d H:i", strtotime("now"))."\n";
 exit;
 
 // ========= db function =========
 function addlogentry($mysqli, $msg) { // write log msg to database
 	$txt = addslashes($msg);
 	$sql = "INSERT INTO `log` (`User`, `SecLevel`, `Text`) VALUES ('EvtMon', 'EvtMon', '$txt');";
-	$res = $mysqli->query($sql);
+	$resx = $mysqli->query($sql);
 	return;
   }
 

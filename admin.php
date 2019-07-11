@@ -10,6 +10,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Registration Admin</title>
 <!-- Bootstrap -->
+<link href="css/font-awesome.min.css" rel="stylesheet">
 <link href="css/bootstrap.min.css " rel="stylesheet" media="all">
 <link href="css/bs3dropdownsubmenus.css" rel="stylesheet">
 </head>
@@ -19,7 +20,7 @@ error_reporting(E_ERROR | E_WARNING | E_PARSE);
 <script src="js/bootstrap.min.js"></script>
 <script src="js/jsutils.js"></script>
 
-<img src="http://morrobaybirdfestival.net/wp-content/uploads/2016/08/LOGO3.png" width="400" height="100" alt="bird festival logo" >
+<img src="https://morrobaybirdfestival.org/wp-content/uploads/2016/08/LOGO3.png" width="400" height="100" alt="bird festival logo" >
 <?php
 // echo '<pre>Server '; print_r($_SERVER); echo '</pre>';
 // include 'Incls/vardump.inc.php';
@@ -28,6 +29,38 @@ include 'Incls/listutils.inc.php';
 include 'Incls/checkcred.inc.php';
 
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : "";
+
+$res1 = doSQLsubmitted("SELECT DISTINCT `ProfName` FROM `regeventlog` WHERE 1;");
+$profilecount = $res1->num_rows;
+//echo "profilecount: $profilecount<br>";
+
+$res2 = doSQLsubmitted("SELECT `ProfName`, `AgendaName` FROM `regeventlog` WHERE 1 GROUP BY `ProfName`, `AgendaName`;");
+$attendeecount = $res2 ->num_rows;
+// echo "attendeecount: $attendeecount<br>";
+
+$sql = "SELECT `events`.`Trip`, `events`.`Event`, `events`.`MaxAttendees`, `regeventlog`.`EvtRowID`, count(`regeventlog`.`RowNbr`) AS 'cnt' 
+FROM `regeventlog`, `events`
+WHERE `regeventlog`.`RecKey`='Evt'
+  AND `regeventlog`.`EvtRowID` = `events`.`RowID`
+GROUP BY `regeventlog`.`EvtRowID`";
+$res3 = doSQLsubmitted($sql);
+$evtcount = 0;
+while ($r = $res3->fetch_assoc()) {
+  if ($r[cnt] >= $r[MaxAttendees]) $evtcount++;
+  } 
+// echo "evtcocunt: $evtcount<br>";
+
+$res4 = doSQLsubmitted("SELECT DISTINCT `ProfileID` FROM `regprofile` WHERE `PayLock` = 'Lock';");
+$confirmedcount = $res4->num_rows;
+// echo "PayLockcount: $profilecount<br>";
+
+$res5 = doSQLsubmitted("SELECT DISTINCT `ProfileID` FROM `regprofile` WHERE `Exempt` = 'Approved';");
+$exemptcount = $res5->num_rows;
+// echo "exemptcount: $exemptcount<br>";
+
+$mon = '<i style="color: red;" class="fa fa-ban fa-2x fa-fw"></i>';
+if (file_exists('reg.evt.monitor.LOCK'))
+  $mon = '<i style="color: green;" class="fa fa-cog fa-spin fa-2x fa-fw"></i>';
 
 // process login info validation
 if ($action == 'auth') {
@@ -61,7 +94,12 @@ include 'Incls/mainmenu.inc.php';
   echo '
 <h3>Registration Administration&nbsp;&nbsp;<a href="adminsto.php?lo=lo" class="btn btn-danger">Log Out</a>
 </h3>
-<a href="admusersanddates.php">Maintain Users And Dates</a><br>
+
+<h3>Dashboard</h3><ul>
+';
+showstats();
+echo '</ul><br><br>
+
 <div class="well">
 <h4>GPL License</h4>
 <p>Registration Admin - Copyright (C) 2017 by Pragmatic Computing, Morro Bay, CA</p>
@@ -85,6 +123,9 @@ if ($action == '') {
 <button name="sb" type="submit" form="login">LOG IN</button>
 </form>
 <br><br>
+<h3>Dashboard</h3><ul>';
+showstats();
+echo '</ul><br><br>
 <div class="well">
 <h4>GPL License</h4>
 <p>Registration Admin -- Copyright (C) 2013 by Pragmatic Computing, Morro Bay, CA</p>
@@ -93,6 +134,18 @@ if ($action == '') {
 ';
 }
 
+function showstats() {
+  global $mon, $profilecount, $confirmedcount;
+  global $attendeecount, $exemptcount,$evtcount;
+  echo '
+<h4>Event Monitor: '.$mon.'</h4>
+<h4>Profiles Registered: '.$profilecount.'</h4>
+<h4>Registrations Confirmed: '.$confirmedcount.'</h4>
+<h4>Attendees Registered: '.$attendeecount.'</h4>
+<h4>Approved Exemptions: '.$exemptcount.'</h4>
+<h4>Events at Capacity: '.$evtcount.'</h4>
+';
+}
 ?>
 </body>
 </html>

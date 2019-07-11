@@ -29,7 +29,6 @@ $fmtdiff = sprintf("%2d Hours %2d Min", $hrs, $mins);
 echo "<br>tp1val: $tp1val, tp2val: $tp2val, diff: $diff<br>";
 echo "tp1: $tp1, tp2: $tp2, diff: $hrs fmtdiff: $fmtdiff<br>";
 
-
 ?>
 <h1>Time Picker Testing</h1>
 <p>Time selected as the end time can not be a time prior to the start time.  The values of the end time are autormatically limited by the start time selected.  Parmeters of the picker function define the min and max and increments to be used for time selections.</p>

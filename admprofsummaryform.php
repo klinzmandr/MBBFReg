@@ -66,8 +66,7 @@ foreach ($agendas as $k => $v) {
 include 'Incls/mainmenu.inc.php';
 ?>
 
-<h1>Profile <?=$profile?></h1>
-<h2>Event Summary</h2>
+<h1>Event Summary for <?=$profile?></h1>
 <?=$tbod?>
 
 </body>

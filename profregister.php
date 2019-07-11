@@ -153,8 +153,10 @@ $balance = number_format(($grandtotal - $totpay - $discapplied),2);
 </style> 
 </head>
 <body>
-<h1>Pro Forma Invoice and Payment</h1>
-<h4>Profile Name: <?=$profname?></h4>
+<h1>Festival Registration Invoice</h1>
+<h3>Profile Name: <?=$profname?></h3>
+<a title="Return to scheduling of events" href="proflogin.php" class="hidden-print btn btn-primary">RETURN</a>&nbsp;&nbsp;
+<img src="img/click-here-to-print.jpg" width="216" height="64" alt="Print page" class="hidden-print" onclick="javascript: window.print();"><br>
 <table class=table>
 <tr><td>Registration(s) (<?=$regmsg?>)</td><td align=right>$<?=$totproffees?></td></tr>
 <tr><td colspan=2><ul><?=$reglist?></ul></td></tr>
@@ -170,12 +172,6 @@ $balance = number_format(($grandtotal - $totpay - $discapplied),2);
 <tr><td>Balance Due:</td><td align=right>$<?=$balance?></td><tr>
 
 </table>
-NOTE: Payments will only be listed after being processed and entered by the Event Registrar.<br>
-<table class=table><tr><td>
-<a title="Return to scheduling of events" href="proflogin.php" class="hidden-print btn btn-primary">D O N E</a></h1>
-</td><td align=right>
-<a title="Go to payments page for instructions on payment by check or PayPal" class="hidden-print btn btn-success" href="profpayment.php?pay=<?=$balance?>">Pay $<?=$balance?> Now</a>
-</td></tr></table>
-<br><br>
+NOTE: Payments will only be shown after being processed by the Event Registrar.<br><br>
 </body>
 </html>

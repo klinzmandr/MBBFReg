@@ -28,7 +28,7 @@ include 'Incls/listutils.inc.php';
 include 'Incls/checkcred.inc.php';
 include 'Incls/mainmenu.inc.php';
 
-$sd = isset($_REQUEST['sd']) ? $_REQUEST['sd'] : date('Y-m-d H:i', strtotime('-1 hour'));
+$sd = isset($_REQUEST['sd']) ? $_REQUEST['sd'] : date('Y-m-d H:i', strtotime('-12 hours'));
 $ed = isset($_REQUEST['ed']) ? $_REQUEST['ed'] : date('Y-m-d 23:59', strtotime("now"));
 $search = isset($_REQUEST['search']) ? $_REQUEST['search'] : '';
 $action = isset($_REQUEST['action']) ? $_REQUEST['action'] : '';
@@ -72,18 +72,17 @@ $('#ed').datetimepicker({
 <?php
 if ($action == 'search') {
 	$search = $_REQUEST['search'];
-	if (strlen($search) > 0) $search = "%$search%";
-	else $search = '%';
+	if (strlen($search) > 0) $searchstr = "AND `Text` LIKE '%$search%'";
+	else $searchstr = '';
 
 	$sql = "
 SELECT * FROM `log` 
 WHERE ( `DateTime` BETWEEN '$sd' AND '$ed' )
   AND ( `Text` NOT LIKE 'Page Load' )
-  AND ( `User` LIKE 'EvtMon' 
-   OR `Text` LIKE '$search' )
+  AND ( `User` LIKE 'EvtMon' $searchstr )
 ORDER BY `DateTime` DESC LIMIT 0,1000;
 ";
-	// echo "sql: $sql<br />";
+	echo "sql: $sql<br />";
 	$res = doSQLsubmitted($sql);
 	$rowcount = $res->num_rows;
 	echo "Rows returned: $rowcount<br />";
@@ -93,7 +92,7 @@ ORDER BY `DateTime` DESC LIMIT 0,1000;
 		//echo '<pre> Log record'; print_r($r); echo '</pre>';
 		$seclevel = $r[SecLevel];
 		//echo "seclevel: $seclevel<br />";
-		echo "<tr><td width='15%'>$r[DateTime]</td><td>$r[Text]</td></tr>";
+		echo "<tr><td width='20%'>$r[DateTime]</td><td>$r[Text]</td></tr>";
 		}
 	echo '</table>';
 	}

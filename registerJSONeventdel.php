@@ -8,10 +8,15 @@ $agenda = $_REQUEST['agenda'];      // comes in as an array
 $day = $_REQUEST['day'];
 $rid = $_REQUEST['rid'];
 
+if (count($agenda) == 0) {
+  echo "agenda name error.  contact author.";
+  exit;
+  }
+  
 $new = '';
 foreach ($agenda as $v) {
   if ($v == '') continue;
-  if (preg_match("/all|attendee/i", $v)) continue;
+  if (preg_match("/allxz/i", $v)) continue;
   $new .= "'$v', " ;
   $newsize++;
   }

@@ -19,7 +19,7 @@ $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
 if ($rc == 0) {
   $tbod = "<h3>No events are scheduled for profile $profile.</h3><br><br>
-  <p>The profile itself may be reviewed and/or updated using the <b>&apos;<a href='http://localhost/www/dev/mbbfreg/profnew.php?action=update'>Upd Profile</a>&apos;</b> button.</p>";
+  <p>The profile itself may be reviewed and/or updated using the <b>&apos;<a href='profnew.php?action=update'>Upd Profile</a>&apos;</b> button.</p>";
   }
 else {
 while ($r = $res->fetch_assoc()) {
@@ -87,7 +87,7 @@ $(".ED").click(function() {
     function(data, status) {
       // alert("response: "+data);
       $("#msgdialogtitle").html("<h3 style='color: red;'>Event Description</h3>");
-      var b = data.substring(4);
+      var b = data.substring(3);
       $("#msgdialogcontent").html(b);
       $('#msgdialog').modal('toggle', { keyboard: true });
       return;
@@ -97,8 +97,9 @@ $(".ED").click(function() {
   
 });
 </script>
-<h1>Profile Event Summary: <?=$profile?>&nbsp;&nbsp;
-<a href="proflogin.php" class="hidden-print btn btn-primary btn-lg">D O N E</a></h1>
+<h1>Events Schedule: <?=$profile?></h1>
+<a href="proflogin.php" class="hidden-print btn btn-primary btn-lg">RETURN</a>
+<img src="img/click-here-to-print.jpg" width="216" height="64" alt="Print page" class="hidden-print" onclick="javascript: window.print();"><br>
 <?=$tbod?>
 
 </body>

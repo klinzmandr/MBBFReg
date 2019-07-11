@@ -8,7 +8,7 @@ $profile = $_SESSION['profname'];
 $agenda = $_REQUEST['agenda'];
 $day = $_REQUEST['day'];
 
-if ($agenda == 'ALL') $agenda = '%';  // list ALL events for ALL attendees
+if ($agenda == 'ALLxz') $agenda = '%';  // list ALL events for ALL attendees
 
 // get list of registered events for given day
 $sql = "SELECT `regeventlog`.*, `events`.`RowID`, `events`.`MaxAttendees`  
@@ -33,7 +33,7 @@ $sql = "SELECT * FROM `events` WHERE `Day` = '$day' AND `TripStatus` = 'Retain' 
 $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
 if ($rc == 0) { 
-  echo "<tr><td colspan=3>No events registered</td></tr>"; 
+  echo "<tr><td colspan=3>No events registered. Select Add/Del Event to start.</td></tr>"; 
   exit;
   }
 

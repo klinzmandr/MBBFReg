@@ -17,7 +17,8 @@ $rc = $res->num_rows;
 $tr = '';
 while ($r = $res->fetch_assoc()) {
   // echo '<pre>profile '; print_r($r); echo '</pre>';
-  $tr .= "<tr style='cursor: pointer;'><td>$r[ProfileID]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td><td>$r[ProfAddress]</td><td>$r[ProfCity]</td><td>$r[ProfState]</td><td>$r[ProfZip]</td></tr>";
+  $emlink = "<a href='emailsend.php?rowid=$r[RowID]'><i class='fa fa-envelope fa-2x' aria-hidden='true' title='Create and send email to registrant'></i></a>";
+    $tr .= "<tr style='cursor: pointer;'><td>$r[ProfileID]</td><td>$emlink</td><td>$r[regType]</td><td>$r[PayLock]</td><td>$r[Exempt]</td><td>$r[SLBM]</td><td>$r[Vol]</td><td>$r[ProfFirstName]</td><td>$r[ProfLastName]</td></tr>";
   }
 
 ?>
@@ -30,6 +31,7 @@ while ($r = $res->fetch_assoc()) {
 <title>Payments</title>
 <!-- Bootstrap -->
 <link href="css/bootstrap.min.css " rel="stylesheet" media="all">
+<link href="css/font-awesome.min.css" rel="stylesheet">
 </head>
 <body>
 <script src="js/jquery.min.js"></script>
@@ -39,7 +41,7 @@ while ($r = $res->fetch_assoc()) {
 include 'Incls/mainmenu.inc.php';
 ?>
 
-<h1>Agenda/Event Maintenance</h1>
+<h1>Schedule Events</h1>
 <script>
 $(function() {
   $("#filter").focus();
@@ -64,7 +66,7 @@ $("#CAN").click( function(event) {
 <?=$updmsg?>
 <input id=filter autofocus placeholder='Filter'><button id=filterbtn2>Reset</button>
 <table class=table>
-<tr id=head><th>ProfileID</th><th>FIrstName</th><th>LastName</th><th>Address</th><th>City</th><th>ST</th><th>Zip</th><th>PhoneNbr</th></tr>
+<tr id=head><th>ProfileID</th><th title='Create and send an email to registrant'>Email</th><th title="Indicates the type of registration for the profile.">RegType</th><th title="Indicates if the profile has been locked due to a payment or by the Registrar.">Lock</th><th title="Indicates if an exemption of fees was requested. Marked &apos;appoved&apos; only by Festival Registrar using this utility.">Exempt</th><th>SLBM</th><th>Vol</th><th>FIrstName</th><th>LastName</th></tr>
 <?=$tr?>
 </table>
 === END LIST ===<br>

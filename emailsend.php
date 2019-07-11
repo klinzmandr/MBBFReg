@@ -1,3 +1,7 @@
+<?php 
+session_start(); 
+error_reporting(E_ERROR | E_WARNING | E_PARSE); 
+?>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,8 +16,6 @@
 <script src="js/jsutils.js"></script>
 
 <?php
-session_start();
-
 // include 'Incls/vardump.inc.php';
 include 'Incls/mainmenu.inc.php';
 include 'Incls/datautils.inc.php';
@@ -138,7 +140,8 @@ Message:<br />
 // sending the message starts here
 // this has been tested and working as of 2018-09-22
 // NOTE:  actual send currently DISABLED at line 188
-include 'Incls/vardump.inc.php';
+// include 'Incls/vardump.inc.php';
+include '../MBBFDBParamInfo';
 
 $from = 'registrar@morrobaybirdfestival.org';
 $addr = $_REQUEST['toaddr'];
@@ -157,7 +160,7 @@ $message  = strtr($body, $trans);
 $notes .= 'Subject: ' . $subject . '<br>';
 $notes .= 'Message: ' . $body . '<br>';
 
-echo '<pre>NOTE '; print_r($notes); echo '</pre>';
+//  echo '<pre>NOTE '; print_r($notes); echo '</pre>';
 
 // establish and set up smtp mail object
 require 'PHPMailer/PHPMailerAutoload.php';
@@ -172,8 +175,8 @@ $mail->Host = 'cpanel01.digitalwest.net';
 $mail->SMTPAuth = true;
 $mail->SMTPKeepAlive = false;
 $mail->Port = 587;
-$mail->Username = 'mbbf';
-$mail->Password = 'Ci1xkPyOadOr';
+$mail->Username = EmailUserID;
+$mail->Password = EmailPassWord;
 $mail->setFrom($from, '');
 $mail->addReplyTo($from, '');
 $mail->Subject = $subject;
@@ -185,8 +188,8 @@ $mail->addAddress($addr, '');
 //echo '<pre>'; print_r($mail); echo '</pre>';
 
 // set up done - send it
-// if (!$mail->send()) {
-if (1 == 2) {  // force error for debugging
+if (!$mail->send()) {
+// if (1 == 2) {  // force error for debugging
 	echo "<br>MAILER ERROR (" . str_replace("@", "&#64;", $addr) . ') ' . $mail->ErrorInfo . "<br />\n";
   $errmsg .= "<br>MAILER ERROR (" . str_replace("@", "&#64;", $addr) . ') ' . $mail->ErrorInfo . '<br />';
   addlogentry($errmsg);
@@ -194,7 +197,7 @@ if (1 == 2) {  // force error for debugging
 addlogentry($notes);
 
 // done!
-echo '<h2>An email message has been sent</h2>
+echo '<h2>Email message sent</h2>
 <p>The message will be able to be reviewed by using the <a href="admlogviewer.php" target=_blank>Log Viewer</a> which will also available in the Reports menu</p><br>
 <!-- <img src="img/Under_Construction.gif" width="310" height="186" alt=""> -->
 <br><br>

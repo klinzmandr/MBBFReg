@@ -11,19 +11,20 @@ include 'Incls/datautils.inc.php';
 include 'Incls/listutils.inc.php';
 include 'Incls/checkcred.inc.php';
 
-// check and setup event registration start and end
-$start = strtotime(getregstart());  $end = strtotime(getregend()); 
-$sd = date('l, F j, Y \a\t g:i A', $start); $ed = date('l, F j, Y \a\t g:i A', $end);
 $evtyr = date("Y", strtotime(geteventstart()));
-$today = strtotime("now");
+
+// check and setup event registration start and end
+// $start = strtotime(getregstart());  $end = strtotime(getregend()); 
+// $sd = date('l, F j, Y \a\t g:i A', $start); $ed = date('l, F j, Y \a\t g:i A', $end);
+// $today = strtotime("now");
 // echo "today: start: $sd, end: $ed<br>";
 // echo "today: $today, start: $start, end: $end<br>";
 // echo "formatted: sd: $sd, ed: $ed<br>";
-$OKFlag = 'OFF'; 
-if (($today >= $start) AND ($today <= $end)) {
-  $OKFlag = 'ON';
+// $OKFlag = 'OFF'; 
+// if (($today >= $start) AND ($today <= $end)) {
+//   $OKFlag = 'ON';
   // echo "Date range check passed<br>";
-  }
+//   }
 // echo "OKFlag: $OKFlag<br>";
 
 // read profile to get partial frestival day, if any
@@ -36,7 +37,7 @@ $regType = $profile['regType'];
 // create the day drop down selections  
 // create single day agenda for partial and exempt profiles
 if ($regType != 'full') {  
-  $selstring = "<option class=SL value=$regType>$regType</option>";
+  $selstring = "<option value=''>Day</option><option value=$regType selected>$regType</option>";
   } 
 // else get day names from config list if full registration
 else {
@@ -108,9 +109,12 @@ while ($r = $res->fetch_assoc()) {
 <script>
 $(function() {
   // alert("page load event");
-  $('#DAY').val('Friday');
-  $('#SEL').val('SELF');
+  $('#DAY').val('');
+  $('#SEL').val('');
+  $('#TB').html('<tr><td>&nbsp;</td><td>&nbsp;</td><td colspan=6>No events scheduled. Start by selecting the Day and Attendee.</td></tr>');
+  
 // check for start and end time to allow registration
+/*
   var regOK = "<?=$OKFlag?>";
   var sd = "<?=$sd?>"; var ed = "<?=$ed?>"; var yr = "<?=$evtyr?>";
   // console.log("sd: "+sd+", ed: "+ed+", yr: "+yr);
@@ -120,9 +124,9 @@ $(function() {
     $('#msgdialog').modal('toggle', { keyboard: true });
     // window.location.href = "proflogin.php";
     }
-
+*/
 // initialize page buttons on document load  
-  // $('td:nth-child(2),th:nth-child(2)').hide();  // hide second col
+  $('td:nth-child(2),th:nth-child(2)').hide();  // hide second col
   showselectedevents();
 });
 </script>
@@ -189,14 +193,27 @@ $("#SEL").change(function() {
   });
 
 $("#ADD").click(function() {
-  // alert("add event to agenda button clicked");
-  // add in ALL to selection list
-  // $("#SEL option[value='ALL']").remove();
-  // $('#SEL').append('<option value="ALL">ALL</option>');
   $("#ADD").hide();
   showallevents(); 
-});
+  });
 
+$("#LIST").click(function() {
+  // alert("list clicked");
+  $.post("registerJSONeventlister.php",
+  {
+  // agenda: a,
+  // day: d
+  },
+  function(data, status){
+    // alert("Data: " + data + "\nStatus: " + status);
+    $("#msgdialogtitle").html("<h3>All Events for All Attendees</h3>"); 
+    $("#msgdialogcontent").html(data); 
+    $('#msgdialog').modal('toggle', { keyboard: true });
+        
+    }
+  );  // end $.post logic 
+
+  });
 
 // bind click of event description to dynamic rows in table
 $('tbody').on('click', '.ED', function() {
@@ -208,7 +225,7 @@ $('tbody').on('click', '.ED', function() {
     function(data, status) {
       // alert("response: "+data);
       $("#msgdialogtitle").html("<h3 style='color: red;'>Event Description</h3>");
-      var b = data.substring(4);
+      var b = data.substring(3);
       $("#msgdialogcontent").html(b);
       $('#msgdialog').modal('toggle', { keyboard: true });
       return;
@@ -226,12 +243,11 @@ $('tbody').on('click', ':checkbox', function(e) {
 // capture select list and handle occurance of 'ALL'
   var a = $("#SEL").val();  // attendee
   var optArray = [];
-  if (a == 'ALL') {
-    var list =   $("#SEL")[0];       // get select list OBJECT
+  if (a == 'ALLxz') {
+    var list = $("#SEL")[0];       // get select list OBJECT
     for (var i = 0; i < list.length; i++) {
       if (list[i].value == '') continue;
-      if (list[i].value == 'ALL') continue;
-      if (list[i].value == 'Attendee') continue;
+      if (list[i].value == 'ALLxz') continue;
       optArray.push(list[i].value);    // save VALUE of all select items
       // console.log(list[i].value);
       }
@@ -314,12 +330,11 @@ $('tbody').on('click', ':checkbox', function(e) {
   else {        // handle unchecking the check box
     var d = $("#SEL").val();    // save current value
     var optArray = [];
-    if (d == 'ALL') {
+    if (d == 'ALLxz') {
       var list =   $("#SEL")[0];       // get select list OBJECT
       for (var i = 0; i < list.length; i++) {
         if (list[i].value == '') continue;
-        if (list[i].value == 'ALL') continue;
-        if (list[i].value == 'Attendee') continue;
+        if (list[i].value == 'ALLxz') continue;
         optArray.push(list[i].value);    // save VALUE of all select items
         // console.log(list[i].value);
         }
@@ -355,14 +370,16 @@ $('tbody').on('click', ':checkbox', function(e) {
 });
 </script>
 <?php
+/*
 if ($OKFlag == 'OFF') {
   echo "<h3>Event registration not available.</h3>";
   echo "<a class='btn btn-danger btn-lg' href='proflogin.php'>RETURN</a>";
   exit;
   }
+*/  
 ?>
 <h1>Schedule Events</h1>
-<h3>Profile Name: <?=$id?>&nbsp;&nbsp;<a href="proflogin.php" class="btn btn-primary btn-lg">D O N E</a></h1></h3>
+<h3>Profile Name: <?=$id?>&nbsp;&nbsp;<a href="proflogin.php" class="btn btn-primary btn-lg">RETURN</a></h1></h3>
 
 <form id=doit action=register.php method=post>
 <select id=DAY name=day>
@@ -373,20 +390,20 @@ if ($OKFlag == 'OFF') {
 <span id=filter>
 <select id=SEL> 
 <option value=''>Attendee</option>
-<option value='ALL'>ALL</option>
+<option value='ALLxz'>ALL</option>
 <?=$agendastr?>
 </select>
 </span>
 &nbsp;&nbsp;
-<button id=ADD title="Add or delete events to agenda">Add/Del Evt</button>
-
-<table class="table" border=1>
+<button id=ADD title="Add or delete events to day and attendee selected">Add/Del Evt</button>
+<button id =LIST title="list all attendees for all events">List All</button>
+<table class="table" border=0>
 <thead>
 <tr><th>Sel</th><th>Rowid</th><th>ST</th><th>Evt</th><th>Event Title (Max/Att)</th><th>Start</th><th>End</th><th>FEE</th></tr>
 </thead>
 <tbody id=TB></tbody>
 </table>
-<a href="proflogin.php" class="btn btn-primary btn-lg">D O N E</a></h1>
+<a href="proflogin.php" class="btn btn-primary btn-lg">RETURN</a></h1>
 
 </body>
 </html>
