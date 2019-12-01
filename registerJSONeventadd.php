@@ -108,11 +108,21 @@ while ($r = $res->fetch_assoc()) {
 $evtcount = $evt + $evtao;    // total number registered for event
 
 // if agenda name list > 1 then it is an all or nothing proposition
+// and no admin override allowed
 if (($size > 1) AND (($evtcount + $size) > $maxcap)) {
   echo 'TM '.'count: '.($evtcount+1).'/cap: '.$maxcap.'/wl: '.$evtwl;
   exit;
   } 
 
+$sql = "INSERT INTO `regeventlog` (`RecKey`, `ProfName`, `AgendaName`, `EvtRowID`, `FEE`) VALUES $insertlist";
+
+if ($evtcount < $maxcap) {
+  $r = doSQLsubmitted($sql);
+  echo 'OK ' . 'counts: ('.$maxcap.'/'.($evtcount+$size).") sql: $sql";
+  exit;
+  }
+
+// Admin can over ride max capacity for a single registration request  
 // if count <= max capacity add row to regeventlog with RecKey = 'Evt' 
 //        and set response to browswer to 'OK'
 // if count > max capacity AND admin mode OFF: 
@@ -122,14 +132,6 @@ if (($size > 1) AND (($evtcount + $size) > $maxcap)) {
 //        add row to regeventlog with RecKey = 'EvtAO'
 //        and set response to browser to 'AO' to notify admin user
 
-$sql = "INSERT INTO `regeventlog` (`RecKey`, `ProfName`, `AgendaName`, `EvtRowID`, `FEE`) VALUES $insertlist";
-
-if ($evtcount < $maxcap) {
-  $r = doSQLsubmitted($sql);
-  echo 'OK ' . 'counts: ('.$maxcap.'/'.($evtcount+$size).") sql: $sql";
-  exit;
-  }
-  
 // good to use the single insert here
 // there will never be a multi event schedule with a WL condition 
 // since it is tested for and handled prior to this logic.

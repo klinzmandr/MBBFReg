@@ -20,7 +20,7 @@ ORDER BY `Trip` ASC";
 $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
 if ($rc == 0) { 
-  echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td colspan=6>No events scheduled. Select Add/Del Evt to start.</td></tr>"; 
+  echo "<tr><td>&nbsp;</td><td>&nbsp;</td><td colspan=6>No events scheduled for day selected. Select <b>Add/Del Evt</b> button to start.</td></tr>"; 
   exit;
   }
 $l = '';

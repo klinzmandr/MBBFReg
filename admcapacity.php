@@ -26,7 +26,8 @@ SELECT `events`.`Trip`, `events`.`Event`, `events`.`MaxAttendees`, `regeventlog`
 FROM `regeventlog`, `events`
 WHERE `regeventlog`.`RecKey`='Evt'
   AND `regeventlog`.`EvtRowID` = `events`.`RowID`
-GROUP BY `regeventlog`.`EvtRowID`
+GROUP BY `regeventlog`.`EvtRowID` 
+ORDER BY `Trip`;
 ";
 $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;

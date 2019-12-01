@@ -13,20 +13,6 @@ include 'Incls/checkcred.inc.php';
 
 $evtyr = date("Y", strtotime(geteventstart()));
 
-// check and setup event registration start and end
-// $start = strtotime(getregstart());  $end = strtotime(getregend()); 
-// $sd = date('l, F j, Y \a\t g:i A', $start); $ed = date('l, F j, Y \a\t g:i A', $end);
-// $today = strtotime("now");
-// echo "today: start: $sd, end: $ed<br>";
-// echo "today: $today, start: $start, end: $end<br>";
-// echo "formatted: sd: $sd, ed: $ed<br>";
-// $OKFlag = 'OFF'; 
-// if (($today >= $start) AND ($today <= $end)) {
-//   $OKFlag = 'ON';
-  // echo "Date range check passed<br>";
-//   }
-// echo "OKFlag: $OKFlag<br>";
-
 // read profile to get partial frestival day, if any
 $profres = doSQLsubmitted("Select `regType` FROM `regprofile` WHERE `ProfileID` = '$id';");
 $profile = $profres->fetch_assoc();
@@ -46,8 +32,7 @@ else {
 
 // create the agenda drop down
 $sql  = "
-SELECT DISTINCT `AgendaName` FROM `regeventlog` WHERE `RecKey` = 'Reg' AND `ProfName` = '$id';
-";
+SELECT DISTINCT `AgendaName` FROM `regeventlog` WHERE `RecKey` = 'Reg' AND `ProfName` = '$id';";
 $agendastr = '';
 $res = doSQLsubmitted($sql);
 $rc = $res->num_rows;
@@ -109,33 +94,20 @@ while ($r = $res->fetch_assoc()) {
 <script>
 $(function() {
   // alert("page load event");
-  $('#DAY').val('');
-  $('#SEL').val('');
+  $('#DAY').val('');    // day list choice
+  $('#SEL').val('');    // attendee list choice
   $('#TB').html('<tr><td>&nbsp;</td><td>&nbsp;</td><td colspan=6>No events scheduled. Start by selecting the Day and Attendee.</td></tr>');
   
-// check for start and end time to allow registration
-/*
-  var regOK = "<?=$OKFlag?>";
-  var sd = "<?=$sd?>"; var ed = "<?=$ed?>"; var yr = "<?=$evtyr?>";
-  // console.log("sd: "+sd+", ed: "+ed+", yr: "+yr);
-  if (regOK == "OFF") {
-    $("#msgdialogtitle").html("<h3 style='color: red;'>On-line Event Registration Not Available</h3>");
-    $("#msgdialogcontent").html("<p>Registration for events for the "+yr+"  Bird Festival is not yet open.</p><p>On-line regisration is available between the dates of "+sd+" and "+ed+".</p><p>Please check back then.</p>");
-    $('#msgdialog').modal('toggle', { keyboard: true });
-    // window.location.href = "proflogin.php";
-    }
-*/
-// initialize page buttons on document load  
+// initialize rows on document load  
   $('td:nth-child(2),th:nth-child(2)').hide();  // hide second col
   showselectedevents();
 });
-</script>
-<script>
+
 function showselectedevents() {
-  // alert ("show selected agenda events for a day");
-  var a = $("#SEL").val();
+  // alert ("show selected agenda events for a day and attendee");
+  var a = $("#SEL").val();  // attendee list choice
   if (a == '') { return; }
-  var d = $("#DAY").val();
+  var d = $("#DAY").val();  // day choice
   if (d == '') { return; }
   // console.log("Selected for Day: "+d+", Agenda: "+a);
   $.post("registerJSONshowselected.php",
@@ -152,12 +124,13 @@ function showselectedevents() {
     );  // end $.post logic 
 }
 </script>
+
 <script>
 function showallevents() {
-  // alert("list all events for the selected day");
-  var a = $("#SEL").val();
+  // alert("list all events for the selected day and attendee");
+  var a = $("#SEL").val();    // attendeed list choice
   if (a == '') { return; }
-  var d = $("#DAY").val();
+  var d = $("#DAY").val();    // day list choice
   if (d == '') { return; }
   // console.log("ALL for Day: "+d+", Agenda: "+a);
   $.post("registerJSONshowall.php",
@@ -166,17 +139,16 @@ function showallevents() {
     day: d
     },
     function(data, status){
+      // alert("Data: " + data + "\nStatus: " + status);
       $("#TB").html(data);
-      // console.log("Data: "+data);
-      // $('th:nth-child(1)').css(transform: scale(1.5););
       $('th:nth-child(1)').show();                  // show check box col
       $('td:nth-child(2),th:nth-child(2)').hide();  // hide rowid col
-      // alert("Data: " + data + "\nStatus: " + status);
       }
     );  // end $.post logic 
 
 } 
 </script>
+
 <script>
 // following are event handlers
 $(function() {
@@ -187,37 +159,37 @@ $("#DAY").change(function() {
   });
 
 $("#SEL").change(function() {
-  // alert("event attendee changed");
+  // alert("event attendee selection changed");
   $("#ADD").show();
   showselectedevents();
   });
 
 $("#ADD").click(function() {
+  // alert("add/delete event clicked");
   $("#ADD").hide();
   showallevents(); 
   });
 
 $("#LIST").click(function() {
-  // alert("list clicked");
+  // alert("list all clicked");
   $.post("registerJSONeventlister.php",
-  {
-  // agenda: a,
-  // day: d
-  },
+  { /* no parameters */  },
   function(data, status){
     // alert("Data: " + data + "\nStatus: " + status);
     $("#msgdialogtitle").html("<h3>All Events for All Attendees</h3>"); 
     $("#msgdialogcontent").html(data); 
     $('#msgdialog').modal('toggle', { keyboard: true });
-        
     }
   );  // end $.post logic 
 
   });
 
-// bind click of event description to dynamic rows in table
+// bind click of event description (class ED) to dynamic rows in table
+// requires 'on' operator since table rows are dynamically loaded
+//    by either json routines showselectedevents or showallevents 
 $('tbody').on('click', '.ED', function() {
-  var rid = $(this).parent().find("td.RID").text(); // read RID
+  var rid = $(this).closest('tr').find("td.RID").text(); // read RID
+  // alert("rid: "+rid);
   $.post("registerJSONeventdescription.php",
       {
       rid: rid
@@ -232,19 +204,22 @@ $('tbody').on('click', '.ED', function() {
   });
 });
 
-// bind click event of check box to dynamic rows in table
+// bind click event of checkbox to dynamic rows in table
+// requires 'on' operator since table rows only loaded
+//    by either json routines showselectedevents or showallevents 
+// handle check and uncheck status of checkbox in table row
 $('tbody').on('click', ':checkbox', function(e) {
-  var rowtr = $(this).parent().parent();            // is the row's tr parent
-  var rid = rowtr.find("td.RID").text();            // read RID using class name
-  var sttus = rowtr.find("td:nth-child(3)");        // cache var for status col
-  var desc = rowtr.find("td:nth-child(5)").text();  // get desc in col 5
-  var fee = rowtr.find("td:last").text();           // read FEE in last column
+  var rowtr = $(this).closest('tr');        // is the row's tr parent
+  var rid = rowtr.find("td.RID").text();    // read RID using class name
+  var sttus = rowtr.find("td:eq(2)");       // cache status col
+  var desc = rowtr.find("td:eq(4)").text(); // get desc in col 5
+  var fee = rowtr.find("td:last").text();   // read FEE in last column
   var matchpat = /^(.*)\((\d{1,3})\/(\d{1,3})\)/;   // mask for update of desc
 // capture select list and handle occurance of 'ALL'
   var a = $("#SEL").val();  // attendee
   var optArray = [];
-  if (a == 'ALLxz') {
-    var list = $("#SEL")[0];       // get select list OBJECT
+  if (a == 'ALLxz') {               // get all attendees in selection list
+    var list = $("#SEL")[0];        // get select list OBJECT
     for (var i = 0; i < list.length; i++) {
       if (list[i].value == '') continue;
       if (list[i].value == 'ALLxz') continue;
@@ -252,15 +227,17 @@ $('tbody').on('click', ':checkbox', function(e) {
       // console.log(list[i].value);
       }
     }
-  else { optArray.push(a);  }   
-// optArray now contains one or more items from select list
+  else {  optArray.push(a);  }   // use selected attendee if not all
+// optArray now contains one or more attendees from select list
 // console.log("agendaList: "+optArray);
   var optlen = optArray.length;   // remember size
-  var d = $("#DAY").val();  // day
-  var cb = $(this);         // checkbox 
+  var d = $("#DAY").val();        // day
+  var cb = $(this);               // checkbox 
   // console.log("cb RID: "+rid);
+// handle checkbox status
   if (cb.prop("checked")) {
-    // console.log("agenda: "+a);
+    // console.log("event checked for: "+a);
+    var data = "";
     $.post("registerJSONeventadd.php",
       {
       agenda: optArray,
@@ -269,18 +246,20 @@ $('tbody').on('click', ':checkbox', function(e) {
       fee: fee
       },
     function(data, status) {
-      // alert("response: "+data);
-      if (data.includes('OK')) {
+      // alert("checked response: "+data);
+      var dx = data.substring(0,3);
+      // console.log('>'+dx+'<');
+      if (dx.includes("OK")) {    // event selected successfully
         // set status column value
         sttus.text('OK'); // status column
         // adjust attendee count 
         var ext = desc.match(matchpat);
         var newdesc = ext[1]+'('+ext[2]+'/'+(parseInt(ext[3])+optlen)+')';
         // console.log("desc: "+ newdesc);
-        rowtr.find("td:nth-child(5)").text(newdesc);
+        rowtr.find("td:eq(4)").text(newdesc);
         return;
         }
-      if (data.includes('WL')) {
+      if (dx.includes('WL')) {  // event wait listed
         // alert('WL returned: ' + data);
         sttus.text('WL');  // status column
         $("#msgdialogtitle").html("<h3>Event Capacity Exceeded</h3>"); 
@@ -288,7 +267,7 @@ $('tbody').on('click', ':checkbox', function(e) {
         $('#msgdialog').modal('toggle', { keyboard: true });
         return;
         }
-      if (data.includes('TE')) {
+      if (dx.includes('TE')) {  // event has time conflict(s)
         // alert('TE returned: ' + data.substring(3));
         cb.prop("checked", false);
         $("#msgdialogtitle").html("<h3>Event Time Conflict</h3>"); 
@@ -296,7 +275,7 @@ $('tbody').on('click', ':checkbox', function(e) {
         $('#msgdialog').modal('toggle', { keyboard: true });
         return;
         }
-      if (data.includes('AO')) {
+      if (dx.includes('AO')) {  // event max'ed but admin over rides max
         // alert("AO returned: "+data);
         sttus.text('AO');   // status column
         // adjust attendee count 
@@ -313,13 +292,13 @@ $('tbody').on('click', ':checkbox', function(e) {
         $('#msgdialog').modal('toggle', { keyboard: true });
         return;
         }
-      if (data.includes('TM')) {
+      if (dx.includes('TM')) {  // event not registered for multi attendees
         cb.prop("checked", false);    // clear the check box
         var regx = /^\s*.*count:.(\d{1,3})\/cap:.(\d{1,3})\/wl:.(\d{1,3}).*\s*$/;
         var res = data.match(regx);
         // console.log("res1: "+res[1]+", res2: "+res[2]);
         $("#msgdialogtitle").html("<h3 style='color: red;'>Mulitple Event Add Error</h3>"); 
-        $("#msgdialogcontent").html("<p>Registration of ALL attendees for this event has failed because it exceeds the maximum capacity of the event.</p><p>NO EVENTS HAVE BEEN REGISTERED!</p><p>Currently registered: "+res[1]+", Event capacity: "+res[2]+", Wait Listed: "+res[3]+"</p>");
+        $("#msgdialogcontent").html("<p>Registration of ALL attendees for this event has failed because the group exceeds the maximum capacity of the event.</p><p>NO EVENTS HAVE BEEN REGISTERED FOR ANYONE!</p><p>Currently registered: "+res[1]+", Event capacity: "+res[2]+", Wait Listed: "+res[3]+"</p>");
         $('#msgdialog').modal('toggle', { keyboard: true });
         return;
         }
@@ -327,7 +306,8 @@ $('tbody').on('click', ':checkbox', function(e) {
       });  // end $.post logic 
     }
   
-  else {        // handle unchecking the check box
+  else {        // handle check box unchecked event
+    // console.log("event unchecked");
     var d = $("#SEL").val();    // save current value
     var optArray = [];
     if (d == 'ALLxz') {
@@ -358,7 +338,7 @@ $('tbody').on('click', ':checkbox', function(e) {
         var newdesc = ext[1]+'('+ext[2]+'/'+(parseInt(ext[3])-optlen)+')';
         // console.log("desc: "+ newdesc);
         if (stat != 'WL') {
-          rowtr.find("td:nth-child(5)").text(newdesc); }
+          rowtr.find("td:eq(4)").text(newdesc); }
         // alert("OK unclick returned:" + data);
         return;
         }
@@ -369,23 +349,13 @@ $('tbody').on('click', ':checkbox', function(e) {
   });
 });
 </script>
-<?php
-/*
-if ($OKFlag == 'OFF') {
-  echo "<h3>Event registration not available.</h3>";
-  echo "<a class='btn btn-danger btn-lg' href='proflogin.php'>RETURN</a>";
-  exit;
-  }
-*/  
-?>
+
 <h1>Schedule Events</h1>
 <h3>Profile Name: <?=$id?>&nbsp;&nbsp;<a href="proflogin.php" class="btn btn-primary btn-lg">RETURN</a></h1></h3>
 
-<form id=doit action=register.php method=post>
 <select id=DAY name=day>
 <?=$selstring?>
 </select>
-</form>
 
 <span id=filter>
 <select id=SEL> 
@@ -395,8 +365,9 @@ if ($OKFlag == 'OFF') {
 </select>
 </span>
 &nbsp;&nbsp;
-<button id=ADD title="Add or delete events to day and attendee selected">Add/Del Evt</button>
 <button id =LIST title="list all attendees for all events">List All</button>
+&nbsp;&nbsp;
+<button id=ADD title="Add or delete events to day and attendee selected">Add/Del Evt</button>
 <table class="table" border=0>
 <thead>
 <tr><th>Sel</th><th>Rowid</th><th>ST</th><th>Evt</th><th>Event Title (Max/Att)</th><th>Start</th><th>End</th><th>FEE</th></tr>
